@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 
 typedef struct {
-    uint64_t i;
+    uint64_t id;
     uint16_t seqno;
     char* data;
 } donnee;
@@ -30,5 +30,9 @@ typedef struct {
     uint16_t node_hash;
     donnee data;
 } tlv;
+
+int sum(uint16_t seqno, int n);
+int less_or_equals(uint16_t seqno1, uint16_t seqno2);
+uint64_t random_id();
 
 #endif
