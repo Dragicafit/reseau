@@ -17,5 +17,5 @@ int less_or_equals(uint16_t seqno1, uint16_t seqno2){
 
 uint64_t random_id() {
     srand( time( NULL ) );
-    return (uint64_t) (rand() % (int) (pow(2, 63)) - 1);
+    return (uint64_t)(rand() % ((int)(pow(2, 63)) - 1));
 }
