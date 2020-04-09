@@ -13,12 +13,12 @@ typedef struct {
 
 typedef struct {
     struct sin6_addr* ip;
-    uint16_t port;
+    in_port_t port;
 } socket;
 
 typedef struct {
     socket s;
-    int permanent;
+    char permanent;
     time_t last_change;
 } voisin;
 
