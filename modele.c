@@ -7,11 +7,11 @@
 
 #include "modele.h"
 
-int sum(uint16_t seqno, int n) {
-    return (seqno + n) % (int)pow(2, 16);
+uint16_t sum(uint16_t seqno, int n) {
+    return (uint16_t)((seqno + n) % (int)pow(2, 16));
 }
 
-int less_or_equals(uint16_t seqno1, uint16_t seqno2){
+char less_or_equals(uint16_t seqno1, uint16_t seqno2){
     return (seqno2 - seqno1) & 32768 == 0;
 }
 
