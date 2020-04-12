@@ -1,5 +1,5 @@
-#ifndef structs
-#define structs
+#ifndef MODELE
+#define MODELE
 
 #include <netinet/in.h>
 #include <stdint.h>
