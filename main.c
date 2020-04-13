@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,123 +18,110 @@
 
 #define PAQUET_SIZE 1024
 #define NB_TLV_MAX PAQUET_SIZE - 4
+#define DATA_SIZE 192
 
-paquet* parser(char* req1) {
-  char req[] = {95, 1,  1,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
-                11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-                26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-                41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
-                56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
-                71, 72, 73, 74, 75, 76, 77, 78, 79, 80};
-  paquet p;
-  memcpy(&p, req, sizeof(paquet));
+paquet* parser(char* req) {
+  char req1[] = {95, 1,  1,  0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+                 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
+                 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
+                 71, 72, 73, 74, 75, 76, 77, 78, 79, 80};
+  paquet* p = malloc(sizeof(paquet));
+  memcpy(p, req, sizeof(paquet));
 
-  tlv list[NB_TLV_MAX];
+  if (p->magic != 95) return NULL;
+  if (p->version != 1) return NULL;
+  if (p->body_length > PAQUET_SIZE - 4) return NULL;
+
+  tlv* list[NB_TLV_MAX];
   int count = 0;
-  for (int i = 0; i < p.body_length;) {
+  for (int i = 4; i < p->body_length + 4;) {
     if (req[i] == 0) {
       i++;
       continue;
     }
-    if (req[i + 1] + i > p.body_length) return NULL;
-    tlv t;
-    if (req[i] >= 3 && req[i] <= 9) {
-      t.type = req[i];
-      t.length = req[i + 1];
-    }
+    tlv* t = malloc(sizeof(tlv));
+    memset(t, 0, sizeof(tlv));
+    t->type = req[i++];
+    t->length = req[i++];
+    if (i + t->length - 1 > p->body_length + 4) return NULL;
 
-    switch (req[i]) {
+    switch (t->type) {
       case 1:
-        i += 2;
-        for (int j = 0; j < req[i - 1]; j++) {
+        for (int j = 0; j < t->length; j++) {
           if (req[i + j] != 0) return NULL;
         }
-        i += req[i - 1];
+        i += t->length;
         break;
       case 2:
-        if (req[i + 1] != 0) return NULL;
-        tlv t = {.type = req[i]};
-        list[count++] = t;
-        i += 2;
+        if (t->length != 0) return NULL;
         break;
       case 3:
-        i += 2;
-        memcpy(t.address.ip, &req[i], 16);
+        memcpy(&t->address.ip, &req[i], 16);
         i += 16;
-        memcpy(t.address.port, &req[i], 2);
-        list[count++] = t;
+        memcpy(&t->address.port, &req[i], 2);
         i += 2;
         break;
       case 4:
-        i += 2;
-        memcpy(t.network_hash, &req[i + 2], 16);
-        list[count++] = t;
+        memcpy(&t->network_hash, &req[i], 16);
         i += 16;
+        break;
       case 5:
-        i += 2;
-        if (req[i + 1] != 0) return NULL;
-        list[count++] = t;
+        if (t->length != 0) return NULL;
         break;
       case 6:
-        i += 2;
-        memcpy(t.data.id, &req[i], 4);
+        memcpy(&t->data.id, &req[i], 4);
         i += 4;
-        memcpy(t.data.seqno, &req[i], 2);
+        memcpy(&t->data.seqno, &req[i], 2);
         i += 2;
-        memcpy(t.node_hash, &req[i], 16);
-        list[count++] = t;
+        memcpy(&t->node_hash, &req[i], 16);
         i += 16;
         break;
       case 7:
-        i += 2;
-        memcpy(t.data.id, &req[i], 4);
-        list[count++] = t;
+        memcpy(&t->data.id, &req[i], 4);
         i += 4;
         break;
       case 8:
-        i += 2;
-        memcpy(t.data.id, &req[i], 4);
+        memcpy(&t->data.id, &req[i], 4);
         i += 4;
-        memcpy(t.data.seqno, &req[i], 2);
+        memcpy(&t->data.seqno, &req[i], 2);
         i += 2;
-        memcpy(t.node_hash, &req[i], 16);
+        memcpy(&t->node_hash, &req[i], 16);
         i += 16;
-        int data_size = t.length - 22;
-        if (data_size > 192) return NULL;
-        memcpy(t.data.data, &req[i], data_size);
-        list[count++] = t;
+        int data_size = t->length - 22;
+        if (data_size > DATA_SIZE) return NULL;
+        memcpy(&t->data.data, &req[i], data_size);
         break;
       case 9:
-        i += 2;
-        memcpy(t.data.data, &req[i + 2], req[i + 1]);
-        list[count++] = t;
-        i += req[i + 1];
+        memcpy(&t->data.data, &req[i], t->length);
+        i += t->length;
         break;
       default:
-        return NULL;
+        i += t->length;
+        continue;
     }
+    list[count++] = t;
   }
 
-  printf("%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n",
-         p.magic, p.version, p.body_length, p.body[0].type, p.body[0].length,
-         (char)p.body[0].address.ip, (char)p.body[0].network_hash,
-         (char)p.body[0].node_hash, (char)p.body[0].data.id, p.body[1].type,
-         p.body[1].length, (char)p.body[1].network_hash,
-         (char)p.body[1].node_hash);
-  paquet* paq = malloc(sizeof(paquet) + sizeof(list));
-  memcpy(paq, p, sizeof(p));
-  paq->body_length = sizeof(list);
-  memcpy(paq->body, &list, sizeof(list));
-  return paq;
+  p = realloc(p, sizeof(paquet) + sizeof(tlv*) * count);
+  for (int i = 0; i < count; i++) {
+    p->body[i] = list[i];
+  }
+
+  printf("%hu\n%hu\n%u\n%hu\n%hu\n%hu\n%hu\n%hu\n%hu\n", p->magic, p->version,
+         p->body_length, p->body[0]->type, p->body[0]->length,
+         (char)p->body[0]->address.ip, (char)p->body[0]->network_hash,
+         (char)p->body[0]->node_hash, (char)p->body[0]->data.id);
+
+  return p;
 }
 
 int main() {
-  parser(NULL);
-  exit(EXIT_SUCCESS);
   int s, val = 1, rc;
   char req[PAQUET_SIZE];
-  char* reply = "";
-  struct sockaddr_in6 addr, client;
+  char reply[] = {95, 1, 2, 0, 2, 0};
+  struct sockaddr_in6 addr, client, serv;
   socklen_t client_len = sizeof(client);
 
   if ((s = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) handle_error("socket error");
@@ -142,10 +130,28 @@ int main() {
 
   memset(&addr, 0, sizeof(addr));
   addr.sin6_family = AF_INET6;
-  addr.sin6_port = htons(3000);
+  addr.sin6_port = htons(3001);
 
-  if ((rc = bind(s, (struct sockaddr*)&addr, sizeof(addr))) < 0)
-    handle_error("bind error");
+  if (bind(s, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+    handle_error("bind s error");
+
+  memset(&serv, 0, sizeof(serv));
+  serv.sin6_family = AF_INET6;
+  serv.sin6_port = htons(8080);
+  if (inet_pton(AF_INET6, "2001:660:3301:9200::51c2:1b9b", &serv.sin6_addr) < 1)
+    handle_error("inet error");
+
+  rc = sendto(s, reply, strlen(reply), 0, &serv, sizeof(serv));
+  if (rc < 0) handle_error("sendto error");
+
+  rc = recv(s, req, sizeof(req), 0);
+  if (rc < 0) handle_error("recvfrom error");
+
+  for (int i = 0; i < strlen(req); i++) {
+    printf("%hhu\n", req[i]);
+  }
+
+  parser(req);
 
   while (1) {
     rc = recvfrom(s, req, sizeof(req), 0, &client, &client_len);

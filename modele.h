@@ -35,7 +35,7 @@ typedef struct {
   uint8_t magic;
   uint8_t version;
   uint16_t body_length;
-  tlv body[];
+  tlv *body[];
 } paquet;
 
 uint16_t sum(uint16_t seqno, int n);
