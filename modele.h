@@ -12,8 +12,8 @@ typedef struct {
 } donnee;
 
 typedef struct {
-  struct sin6_addr *ip;
-  struct sin6_port *port;
+  struct in6_addr ip;
+  in_port_t port;
 } addr;
 
 typedef struct {
@@ -26,8 +26,8 @@ typedef struct {
   uint8_t type;
   uint8_t length;
   addr address;
-  uint16_t network_hash;
-  uint16_t node_hash;
+  __uint128_t network_hash;
+  __uint128_t node_hash;
   donnee data;
 } tlv;
 
