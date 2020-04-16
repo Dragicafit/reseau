@@ -26,6 +26,23 @@
     for (int j = size - 1; j <= 0; j--) data += (req[i++] << (j * 8)); \
   }
 
+void printPaquet(paquet* p) {
+  char ip[INET6_ADDRSTRLEN];
+  inet_ntop(AF_INET6, &p->body[0]->address.ip, ip, INET6_ADDRSTRLEN);
+  printf("%hhu\n", p->magic);
+  printf("%hhu\n", p->version);
+  printf("%hu\n", p->body_length);
+  printf("%hhu\n", p->body[0]->type);
+  printf("%hhu\n", p->body[0]->length);
+  printf("%s:", ip);
+  printf("%hu\n", ntohs(p->body[0]->address.port));
+  printf("%lu, ", ((uint64_t*)&p->body[0]->network_hash)[0]);
+  printf("%lu\n", ((uint64_t*)&p->body[0]->network_hash)[1]);
+  printf("%lu, ", ((uint64_t*)&p->body[0]->node_hash)[0]);
+  printf("%lu\n", ((uint64_t*)&p->body[0]->node_hash)[1]);
+  printf("%lu\n", p->body[0]->data.id);
+}
+
 paquet* parser(uint8_t req[]) {
   if (0) {
     uint8_t req1[] = {
@@ -111,21 +128,7 @@ paquet* parser(uint8_t req[]) {
     p->body[i] = list[i];
   }
 
-  char ip[INET6_ADDRSTRLEN];
-  inet_ntop(AF_INET6, &p->body[0]->address.ip, ip, INET6_ADDRSTRLEN);
-
-  printf("%hhu\n", p->magic);
-  printf("%hhu\n", p->version);
-  printf("%hu\n", p->body_length);
-  printf("%hhu\n", p->body[0]->type);
-  printf("%hhu\n", p->body[0]->length);
-  printf("%s:", ip);
-  printf("%hu\n", ntohs(p->body[0]->address.port));
-  printf("%lu, ", ((uint64_t*)&p->body[0]->network_hash)[0]);
-  printf("%lu\n", ((uint64_t*)&p->body[0]->network_hash)[1]);
-  printf("%lu, ", ((uint64_t*)&p->body[0]->node_hash)[0]);
-  printf("%lu\n", ((uint64_t*)&p->body[0]->node_hash)[1]);
-  printf("%lu\n", p->body[0]->data.id);
+  printPaquet(p);
 
   return p;
 }
