@@ -155,7 +155,7 @@ int main() {
   memset(&serv, 0, sizeof(serv));
   serv.sin6_family = AF_INET6;
   serv.sin6_port = htons(1212);
-  if (inet_pton(AF_INET6, "2001:660:3301:9200::51c2:1b9b", &serv.sin6_addr) < 1)
+  if (inet_pton(AF_INET6, "::ffff:81.194.27.155", &serv.sin6_addr) < 1)
     handle_error("inet error");
 
   parser(reply);
