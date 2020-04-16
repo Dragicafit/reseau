@@ -8,39 +8,57 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "constantes.h"
 #include "modele.h"
 
-#define handle_error(msg) \
-  do {                    \
-    perror(msg);          \
-    exit(EXIT_FAILURE);   \
-  } while (0)
-
-#define PAQUET_SIZE 1024
-#define NB_TLV_MAX PAQUET_SIZE - 4
-#define DATA_SIZE 192
-
-#define bigIndia(i, req, data, size)                                   \
-  {                                                                    \
-    data = 0;                                                          \
-    for (int j = size - 1; j <= 0; j--) data += (req[i++] << (j * 8)); \
-  }
-
 void printPaquet(paquet* p) {
+  printf("magic : \t\t%hhu\n", p->magic);
+  printf("version : \t\t%hhu\n", p->version);
+  printf("body_length : \t\t%hu\n", p->body_length);
   char ip[INET6_ADDRSTRLEN];
-  inet_ntop(AF_INET6, &p->body[0]->address.ip, ip, INET6_ADDRSTRLEN);
-  printf("%hhu\n", p->magic);
-  printf("%hhu\n", p->version);
-  printf("%hu\n", p->body_length);
-  printf("%hhu\n", p->body[0]->type);
-  printf("%hhu\n", p->body[0]->length);
-  printf("%s:", ip);
-  printf("%hu\n", ntohs(p->body[0]->address.port));
-  printf("%lu, ", ((uint64_t*)&p->body[0]->network_hash)[0]);
-  printf("%lu\n", ((uint64_t*)&p->body[0]->network_hash)[1]);
-  printf("%lu, ", ((uint64_t*)&p->body[0]->node_hash)[0]);
-  printf("%lu\n", ((uint64_t*)&p->body[0]->node_hash)[1]);
-  printf("%lu\n", p->body[0]->data.id);
+
+  for (int i = 0; i < p->length; i++) {
+    tlv* t = p->body[i];
+    if (t->type == 0) {
+      i++;
+      continue;
+    }
+    printf("type : \t\t\t%hhu\n", t->type);
+    printf("length : \t\t%hhu\n", t->length);
+
+    switch (t->type) {
+      case 3:
+        inet_ntop(AF_INET6, &t->address.ip, ip, INET6_ADDRSTRLEN);
+        printf("ip : \t\t\t%s:%hu\n", ip, ntohs(t->address.port));
+        break;
+      case 4:
+        printf("network hash : \t\t%x%x\n", ((uint64_t*)&t->network_hash)[0],
+               ((uint64_t*)&t->network_hash)[1]);
+        break;
+      case 6:
+        printf("id : \t\t\t%lu\n", t->data->id);
+        printf("seqno : \t\t\t%hu\n", t->data->seqno);
+        printf("node hash : \t\t%x%x\n", ((uint64_t*)&t->node_hash)[0],
+               ((uint64_t*)&t->node_hash)[1]);
+        break;
+      case 7:
+        printf("id : \t\t\t%lu\n", t->data->id);
+        break;
+      case 8:
+        printf("id : \t\t\t%lu\n", t->data->id);
+        printf("seqno : \t\t\t%hu\n", t->data->seqno);
+        printf("node hash : \t\t%x%x\n", ((uint64_t*)&t->node_hash)[0],
+               ((uint64_t*)&t->node_hash)[1]);
+        printf("data : \t\t\t%s\n", t->data->data);
+        break;
+      case 9:
+        printf("warning : \t\t%s\n", t->data->data);
+        break;
+      default:
+        break;
+    }
+    printf("\n");
+  }
 }
 
 paquet* parser(uint8_t req[]) {
@@ -53,6 +71,7 @@ paquet* parser(uint8_t req[]) {
         64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80};
     req = req1;
   }
+  int data_size;
 
   paquet* p = malloc(sizeof(paquet));
   memset(p, 0, sizeof(paquet));
@@ -97,24 +116,32 @@ paquet* parser(uint8_t req[]) {
         if (t->length != 0) return NULL;
         break;
       case 6:
-        bigIndia(i, req, t->data.id, 4);
-        bigIndia(i, req, t->data.seqno, 2);
+        t->data = malloc(sizeof(donnee));
+        bigIndia(i, req, t->data->id, 8);
+        bigIndia(i, req, t->data->seqno, 2);
         bigIndia(i, req, t->node_hash, 16);
         break;
       case 7:
-        bigIndia(i, req, t->data.id, 4);
+        t->data = malloc(sizeof(donnee));
+        bigIndia(i, req, t->data->id, 8);
         break;
       case 8:
-        bigIndia(i, req, t->data.id, 4);
-        bigIndia(i, req, t->data.seqno, 2);
-        bigIndia(i, req, t->node_hash, 16);
-        int data_size = t->length - 22;
+        data_size = t->length - 26;
         if (data_size > DATA_SIZE) return NULL;
-        memcpy(&t->data.data, &req[i], data_size);
+        t->data = malloc(sizeof(donnee) + data_size + 1);
+        bigIndia(i, req, t->data->id, 8);
+        bigIndia(i, req, t->data->seqno, 2);
+        bigIndia(i, req, t->node_hash, 16);
+        memcpy(t->data->data, &req[i], data_size);
+        t->data->data[data_size + 1] = '\0';
+        i += data_size;
         break;
       case 9:
-        memcpy(&t->data.data, &req[i], t->length);
-        i += t->length;
+        data_size = t->length;
+        t->data = malloc(sizeof(donnee) + data_size + 1);
+        memcpy(t->data->data, &req[i], data_size);
+        t->data->data[data_size + 1] = '\0';
+        i += data_size;
         break;
       default:
         i += t->length;
@@ -124,7 +151,8 @@ paquet* parser(uint8_t req[]) {
   }
 
   p = realloc(p, sizeof(paquet) + sizeof(tlv*) * count);
-  for (int i = 0; i < count; i++) {
+  p->length = count;
+  for (int i = 0; i < p->length; i++) {
     p->body[i] = list[i];
   }
 
@@ -133,13 +161,18 @@ paquet* parser(uint8_t req[]) {
   return p;
 }
 
-int main() {
+int main(int argc, char const* argv[]) {
   int s, val = 1, rc;
   uint8_t req[PAQUET_SIZE] = {0};
   char reply[] = {95, 1, 0, 2, 2, 0};
   char reply4[] = {95, 1, 0, 18, 4, 16, 0, 0, 0, 0, 0,
                    0,  0, 0, 0,  0, 0,  0, 0, 0, 0, 0};
   struct sockaddr_in6 addr, client, serv;
+
+  char ipv6 = 0;
+  if (argc > 1 && argv[1][0] == '1') {
+    ipv6 = 1;
+  }
 
   if ((s = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) handle_error("socket error");
   if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0)
@@ -155,7 +188,9 @@ int main() {
   memset(&serv, 0, sizeof(serv));
   serv.sin6_family = AF_INET6;
   serv.sin6_port = htons(1212);
-  if (inet_pton(AF_INET6, "::ffff:81.194.27.155", &serv.sin6_addr) < 1)
+  if (inet_pton(AF_INET6,
+                ipv6 ? "2001:660:3301:9200::51c2:1b9b" : "::ffff:81.194.27.155",
+                &serv.sin6_addr) < 1)
     handle_error("inet error");
 
   parser(reply);

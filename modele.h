@@ -8,6 +8,7 @@
 typedef struct {
   uint64_t id;
   uint16_t seqno;
+  size_t length;
   char data[];
 } donnee;
 
@@ -28,14 +29,15 @@ typedef struct {
   addr address;
   __uint128_t network_hash;
   __uint128_t node_hash;
-  donnee data;
+  donnee* data;
 } tlv;
 
 typedef struct {
   uint8_t magic;
   uint8_t version;
   uint16_t body_length;
-  tlv *body[];
+  size_t length;
+  tlv* body[];
 } paquet;
 
 uint16_t sum(uint16_t seqno, int n);
