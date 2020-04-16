@@ -1,11 +1,11 @@
 CC      := gcc
 CCFLAGS := -Wall -g -std=c11 -m64
-LDFLAGS := -lm
+LDFLAGS := -lm -lcrypto
 
 TARGETS:= main
 MAINS  := $(addsuffix .o, $(TARGETS) )
-OBJ    := modele.o $(MAINS)
-DEPS   := modele.h
+OBJ    := $(patsubst %.c, %.o, $(wildcard *.c))
+DEPS   := $(wildcard *.h)
 
 .PHONY: all clean
 
@@ -17,5 +17,5 @@ clean:
 $(OBJ): %.o : %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CCFLAGS)
 
-$(TARGETS): % : $(filter-out $(MAINS), $(OBJ)) %.o
+$(TARGETS): $(OBJ)
 	$(CC) -o $@ $(LIBS) $^ $(CCFLAGS) $(LDFLAGS)
