@@ -85,14 +85,14 @@ paquet* parser(uint8_t req[]) {
         bigIndia(i, req, t->data->seqno, 2);
         bigIndia(i, req, t->node_hash, 16);
         memcpy(t->data->data, &req[i], data_size);
-        t->data->data[data_size + 1] = '\0';
+        t->data->data[data_size] = '\0';
         i += data_size;
         break;
       case 9:
         data_size = t->length;
         t->data = malloc(sizeof(donnee) + data_size + 1);
         memcpy(t->data->data, &req[i], data_size);
-        t->data->data[data_size + 1] = '\0';
+        t->data->data[data_size] = '\0';
         i += data_size;
         break;
       default:
@@ -111,4 +111,97 @@ paquet* parser(uint8_t req[]) {
   printPaquet(p);
 
   return p;
+}
+
+uint8_t* arcParser(paquet* p) {
+  if (0) {
+    paquet* p1 = malloc(PAQUET_SIZE);
+    p1->magic = 95;
+    p1->version = 1;
+    p1->body_length = 0;
+    p1->length = 0;
+    tlv* t = malloc(sizeof(tlv) + DATA_SIZE);
+    p1->body[0] = t;
+    t->type = 2;
+    t->length = 0;
+    p = p1;
+  }
+  int data_size;
+
+  uint8_t* req = malloc(4 + p->body_length);
+  memset(req, 0, sizeof(req));
+  req[0] = p->magic;
+  req[1] = p->version;
+  *((uint16_t*)&req[2]) = htobe16(p->body_length);
+
+  if (req[0] != 95) return NULL;
+  if (req[1] != 1) return NULL;
+  if (sizeof(req) > PAQUET_SIZE) return NULL;
+
+  int count = 4;
+  for (int i = 0; i < p->length; i++) {
+    tlv* t = p->body[i];
+    if (t == NULL) return NULL;
+    if (t->type == 0) return NULL;
+    req[count++] = t->type;
+    req[count++] = t->length;
+    if (count + t->length - 1 > sizeof(req)) return NULL;
+    switch (t->type) {
+      case 1:
+        for (int j = 0; j < t->length; j++) {
+          req[count++] = 0;
+        }
+        break;
+      case 2:
+        if (t->length != 0) return NULL;
+        break;
+      case 3:
+        memcpy(&req[count], &t->address.ip, 16);
+        count += 16;
+        memcpy(&req[count], &t->address.port, 2);
+        count += 2;
+        break;
+      case 4:
+        memcpy(&req[count], &t->network_hash, 16);
+        count += 16;
+        break;
+      case 5:
+        if (t->length != 0) return NULL;
+        break;
+      case 6:
+        memcpy(&req[count], &t->data->id, 8);
+        count += 8;
+        memcpy(&req[count], &t->data->seqno, 2);
+        count += 2;
+        memcpy(&req[count], &t->node_hash, 16);
+        count += 16;
+        break;
+      case 7:
+        memcpy(&req[count], &t->data->id, 8);
+        count += 8;
+        break;
+      case 8:
+        data_size = t->length - 26;
+        if (data_size > DATA_SIZE) return NULL;
+        memcpy(&req[count], &t->data->id, 8);
+        count += 8;
+        memcpy(&req[count], &t->data->seqno, 2);
+        count += 2;
+        memcpy(&req[count], &t->node_hash, 16);
+        count += 16;
+        memcpy(&req[i], t->data->data, data_size);
+        count += data_size;
+        break;
+      case 9:
+        data_size = t->length;
+        memcpy(&req[i], t->data->data, data_size);
+        count += data_size;
+        break;
+      default:
+        count += t->length;
+        continue;
+    }
+  }
+
+  return req;
 }

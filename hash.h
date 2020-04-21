@@ -5,7 +5,7 @@
 
 #include "modele.h"
 
-uint8_t* nodeHash(donnee* donnee);
-uint8_t* networkHash();
+__uint128_t nodeHash(donnee* donnee);
+__uint128_t networkHash(donnee* donnees[]);
 
 #endif

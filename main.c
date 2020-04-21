@@ -8,8 +8,12 @@
 #include <unistd.h>
 
 #include "constantes.h"
+#include "hash.h"
 #include "modele.h"
 #include "parser.h"
+
+voisin* voisins[VOISINS_SIZE] = {NULL};
+donnee* donnees[DONNEES_SIZE] = {NULL};
 
 void printPaquet(paquet* p) {
   printf("magic : \t\t%hhu\n", p->magic);
@@ -118,7 +122,7 @@ int main(int argc, char const* argv[]) {
   rc = recv(s, req, PAQUET_SIZE, 0);
   if (rc < 0) handle_error("recvf error");
 
-  parser(req);
+  parser(arcParser(parser(req)));
 
   close(s);
   return 0;
