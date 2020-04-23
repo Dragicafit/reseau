@@ -24,20 +24,22 @@ paquet* parser(uint8_t req[]) {
     req = req1;
   }
   int data_size;
+  uint16_t body_length;
+  uint8_t tlv_length;
 
   paquet* p = malloc(sizeof(paquet));
   memset(p, 0, sizeof(paquet));
   p->magic = req[0];
   p->version = req[1];
-  p->body_length = (req[2] << 8) + req[3];
+  body_length = (req[2] << 8) + req[3];
 
   if (p->magic != 95) return NULL;
   if (p->version != 1) return NULL;
-  if (p->body_length + 4 > PAQUET_SIZE) return NULL;
+  if (body_length + 4 > PAQUET_SIZE) return NULL;
 
   tlv* list[NB_TLV_MAX];
   int count = 0;
-  for (int i = 4; i < p->body_length + 4;) {
+  for (int i = 4; i < body_length + 4;) {
     if (req[i] == 0) {
       i++;
       continue;
@@ -45,16 +47,16 @@ paquet* parser(uint8_t req[]) {
     tlv* t = malloc(sizeof(tlv));
     memset(t, 0, sizeof(tlv));
     t->type = req[i++];
-    t->length = req[i++];
-    if (i + t->length - 1 > p->body_length + 4) return NULL;
+    tlv_length = req[i++];
+    if (i + tlv_length - 1 > body_length + 4) return NULL;
     switch (t->type) {
       case 1:
-        for (int j = 0; j < t->length; j++) {
+        for (int j = 0; j < tlv_length; j++) {
           if (req[i++] != 0) return NULL;
         }
         break;
       case 2:
-        if (t->length != 0) return NULL;
+        if (tlv_length != 0) return NULL;
         break;
       case 3:
         memcpy(&t->address.ip, &req[i], 16);
@@ -65,7 +67,7 @@ paquet* parser(uint8_t req[]) {
         bigIndia(i, req, t->network_hash, 16);
         break;
       case 5:
-        if (t->length != 0) return NULL;
+        if (tlv_length != 0) return NULL;
         break;
       case 6:
         t->data = malloc(sizeof(donnee));
@@ -78,7 +80,7 @@ paquet* parser(uint8_t req[]) {
         bigIndia(i, req, t->data->id, 8);
         break;
       case 8:
-        data_size = t->length - 26;
+        data_size = tlv_length - 26;
         if (data_size > DATA_SIZE) return NULL;
         t->data = malloc(sizeof(donnee) + data_size + 1);
         bigIndia(i, req, t->data->id, 8);
@@ -86,25 +88,27 @@ paquet* parser(uint8_t req[]) {
         bigIndia(i, req, t->node_hash, 16);
         memcpy(t->data->data, &req[i], data_size);
         t->data->data[data_size] = '\0';
+        t->data->length = data_size;
         i += data_size;
         break;
       case 9:
-        data_size = t->length;
+        data_size = tlv_length;
         t->data = malloc(sizeof(donnee) + data_size + 1);
         memcpy(t->data->data, &req[i], data_size);
         t->data->data[data_size] = '\0';
+        t->data->length = data_size;
         i += data_size;
         break;
       default:
-        i += t->length;
+        i += tlv_length;
         continue;
     }
     list[count++] = t;
   }
 
   p = realloc(p, sizeof(paquet) + sizeof(tlv*) * count);
-  p->length = count;
-  for (int i = 0; i < p->length; i++) {
+  p->length = count * sizeof(tlv*);
+  for (int i = 0; i < p->length / sizeof(tlv*); i++) {
     p->body[i] = list[i];
   }
 
@@ -116,92 +120,95 @@ paquet* parser(uint8_t req[]) {
 uint8_t* arcParser(paquet* p) {
   if (0) {
     paquet* p1 = malloc(PAQUET_SIZE);
+    memset(p, 0, PAQUET_SIZE);
     p1->magic = 95;
     p1->version = 1;
-    p1->body_length = 0;
     p1->length = 0;
     tlv* t = malloc(sizeof(tlv) + DATA_SIZE);
+    memset(t, 0, sizeof(tlv) + DATA_SIZE);
     p1->body[0] = t;
     t->type = 2;
-    t->length = 0;
     p = p1;
   }
-  int data_size;
+  int data_size = 0;
+  uint16_t paquet_size = 0;
+  uint8_t tlv_body[DATA_SIZE + 26];
 
-  uint8_t* req = malloc(4 + p->body_length);
-  memset(req, 0, 4 + p->body_length);
-  req[0] = p->magic;
-  req[1] = p->version;
-  *((uint16_t*)&req[2]) = htobe16(p->body_length);
+  uint8_t tlvList[PAQUET_SIZE - 4];
 
-  if (req[0] != 95) return NULL;
-  if (req[1] != 1) return NULL;
-  if (4 + p->body_length > PAQUET_SIZE) return NULL;
-
-  int count = 4;
-  for (int i = 0; i < p->length; i++) {
+  for (int i = 0; i < p->length / sizeof(tlv*); i++) {
+    int count = 0;
     tlv* t = p->body[i];
     if (t == NULL) return NULL;
     if (t->type == 0) return NULL;
-    req[count++] = t->type;
-    req[count++] = t->length;
-    if (count + t->length - 1 > 4 + p->body_length) return NULL;
     switch (t->type) {
       case 1:
-        for (int j = 0; j < t->length; j++) {
-          req[count++] = 0;
+        for (int j = 0; j < t->data->length; j++) {
+          tlv_body[count++] = 0;
         }
         break;
       case 2:
-        if (t->length != 0) return NULL;
         break;
       case 3:
-        memcpy(&req[count], &t->address.ip, 16);
+        memcpy(&tlv_body[count], &t->address.ip, 16);
         count += 16;
-        memcpy(&req[count], &t->address.port, 2);
+        memcpy(&tlv_body[count], &t->address.port, 2);
         count += 2;
         break;
       case 4:
-        memcpy(&req[count], &t->network_hash, 16);
+        memcpy(&tlv_body[count], &t->network_hash, 16);
         count += 16;
         break;
       case 5:
-        if (t->length != 0) return NULL;
         break;
       case 6:
-        memcpy(&req[count], &t->data->id, 8);
+        memcpy(&tlv_body[count], &t->data->id, 8);
         count += 8;
-        memcpy(&req[count], &t->data->seqno, 2);
+        memcpy(&tlv_body[count], &t->data->seqno, 2);
         count += 2;
-        memcpy(&req[count], &t->node_hash, 16);
+        memcpy(&tlv_body[count], &t->node_hash, 16);
         count += 16;
         break;
       case 7:
-        memcpy(&req[count], &t->data->id, 8);
+        memcpy(&tlv_body[count], &t->data->id, 8);
         count += 8;
         break;
       case 8:
-        data_size = t->length - 26;
+        data_size = t->data->length;
         if (data_size > DATA_SIZE) return NULL;
-        memcpy(&req[count], &t->data->id, 8);
+        memcpy(&tlv_body[count], &t->data->id, 8);
         count += 8;
-        memcpy(&req[count], &t->data->seqno, 2);
+        memcpy(&tlv_body[count], &t->data->seqno, 2);
         count += 2;
-        memcpy(&req[count], &t->node_hash, 16);
+        memcpy(&tlv_body[count], &t->node_hash, 16);
         count += 16;
-        memcpy(&req[i], t->data->data, data_size);
+        memcpy(&tlv_body[count], t->data->data, data_size);
         count += data_size;
         break;
       case 9:
-        data_size = t->length;
-        memcpy(&req[i], t->data->data, data_size);
+        data_size = t->data->length;
+        memcpy(&tlv_body[count], t->data->data, data_size);
         count += data_size;
         break;
       default:
-        count += t->length;
         continue;
     }
+    tlvList[paquet_size++] = t->type;
+    tlvList[paquet_size++] = count;
+    memcpy(&tlvList[paquet_size], tlv_body, count);
+    paquet_size += count;
   }
+
+  uint8_t* req = malloc(4 + paquet_size);
+  memset(req, 0, 4 + paquet_size);
+  req[0] = p->magic;
+  req[1] = p->version;
+  *((uint16_t*)&req[2]) = htole16(be16toh(paquet_size));
+  memcpy(&req[4], tlvList, paquet_size);
+
+  if (req[0] != 95) return NULL;
+  if (req[1] != 1) return NULL;
+  if (4 + paquet_size > PAQUET_SIZE) return NULL;
 
   return req;
 }

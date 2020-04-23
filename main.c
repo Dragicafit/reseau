@@ -18,17 +18,16 @@ donnee* donnees[DONNEES_SIZE] = {NULL};
 void printPaquet(paquet* p) {
   printf("magic : \t\t%hhu\n", p->magic);
   printf("version : \t\t%hhu\n", p->version);
-  printf("body_length : \t\t%hu\n", p->body_length);
+  printf("nb tlv : \t\t%lu\n", p->length / sizeof(tlv*));
   char ip[INET6_ADDRSTRLEN];
 
-  for (int i = 0; i < p->length; i++) {
+  for (int i = 0; i < p->length / sizeof(tlv*); i++) {
     tlv* t = p->body[i];
     if (t->type == 0) {
       i++;
       continue;
     }
     printf("type : \t\t\t%hhu\n", t->type);
-    printf("length : \t\t%hhu\n", t->length);
 
     switch (t->type) {
       case 3:
@@ -49,6 +48,7 @@ void printPaquet(paquet* p) {
         printf("id : \t\t\t%lu\n", t->data->id);
         break;
       case 8:
+        printf("length : \t\t%lu\n", t->data->length);
         printf("id : \t\t\t%lu\n", t->data->id);
         printf("seqno : \t\t\t%hu\n", t->data->seqno);
         printf("node hash : \t\t%lx%lx\n", ((uint64_t*)&t->node_hash)[0],
@@ -56,6 +56,7 @@ void printPaquet(paquet* p) {
         printf("data : \t\t\t%s\n", t->data->data);
         break;
       case 9:
+        printf("length : \t\t%lu\n", t->data->length);
         printf("warning : \t\t%s\n", t->data->data);
         break;
       default:
@@ -69,10 +70,33 @@ void printPaquet(paquet* p) {
 int main(int argc, char const* argv[]) {
   int s, val = 1, rc;
   uint8_t req[PAQUET_SIZE] = {0};
-  uint8_t reply[] = {95, 1, 0, 2, 2, 0};
-  uint8_t reply4[] = {95, 1, 0, 18, 4, 16, 0, 0, 0, 0, 0,
-                      0,  0, 0, 0,  0, 0,  0, 0, 0, 0, 0};
+
+  paquet* p = malloc(sizeof(paquet) + sizeof(tlv*));
+  memset(p, 0, sizeof(paquet) + sizeof(tlv*));
+  p->magic = 95;
+  p->version = 1;
+  p->length = sizeof(tlv*);
+  tlv* t = malloc(sizeof(tlv));
+  memset(t, 0, sizeof(tlv));
+  p->body[0] = t;
+  t->type = 2;
+
+  uint8_t* reply = arcParser(p);
+
+  memset(p, 0, sizeof(paquet) + sizeof(tlv*));
+  p->magic = 95;
+  p->version = 1;
+  p->length = sizeof(tlv*);
+  tlv* t2 = malloc(sizeof(tlv) + 16);
+  memset(t, 0, sizeof(tlv) + 16);
+  p->body[0] = t;
+  t->type = 4;
+  t->network_hash = networkHash(donnees);
+
+  uint8_t* reply4 = arcParser(p);
+
   struct sockaddr_in6 addr, client, serv;
+  socklen_t serv_len = sizeof(serv);
 
   char ipv6 = 0;
   if (argc > 1 && argv[1][0] == '1') {
@@ -100,14 +124,14 @@ int main(int argc, char const* argv[]) {
 
   parser(reply);
 
-  rc =
-      sendto(s, reply, sizeof(reply), 0, (struct sockaddr*)&serv, sizeof(serv));
+  rc = sendto(s, reply, (reply[2] << 8) + reply[3] + 4, 0,
+              (struct sockaddr*)&serv, serv_len);
   if (rc < 0) handle_error("sendto error");
 
-  rc = recv(s, req, PAQUET_SIZE, 0);
+  rc = recvfrom(s, req, PAQUET_SIZE, 0, (struct sockaddr*)&serv, &serv_len);
   if (rc < 0) handle_error("recvf error");
 
-  paquet* p = parser(req);
+  p = parser(req);
 
   memset(&client, 0, sizeof(client));
   client.sin6_family = AF_INET6;
@@ -116,14 +140,15 @@ int main(int argc, char const* argv[]) {
 
   memset(req, 0, PAQUET_SIZE);
   parser(reply4);
-  rc = sendto(s, reply4, sizeof(reply4), 0, (struct sockaddr*)&client,
-              sizeof(client));
+
+  rc = sendto(s, reply4, (reply4[2] << 8) + reply4[3] + 4, 0,
+              (struct sockaddr*)&client, sizeof(client));
   if (rc < 0) handle_error("sendto error");
 
-  rc = recv(s, req, PAQUET_SIZE, 0);
+  rc = recvfrom(s, req, PAQUET_SIZE, 0, (struct sockaddr*)&serv, &serv_len);
   if (rc < 0) handle_error("recvf error");
 
-  parser(arcParser(parser(req)));
+  parser(req);
 
   close(s);
   return 0;

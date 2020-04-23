@@ -25,7 +25,6 @@ typedef struct {
 
 typedef struct {
   uint8_t type;
-  uint8_t length;
   addr address;
   __uint128_t network_hash;
   __uint128_t node_hash;
@@ -35,7 +34,6 @@ typedef struct {
 typedef struct {
   uint8_t magic;
   uint8_t version;
-  uint16_t body_length;
   size_t length;
   tlv* body[];
 } paquet;
