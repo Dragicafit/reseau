@@ -63,6 +63,7 @@ void printPaquet(paquet* p) {
     }
     printf("\n");
   }
+  fflush(stdout);
 }
 
 int main(int argc, char const* argv[]) {

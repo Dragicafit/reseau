@@ -10,7 +10,7 @@
 #define bigIndia(i, req, data, size)                                   \
   {                                                                    \
     data = 0;                                                          \
-    for (int j = size - 1; j <= 0; j--) data += (req[i++] << (j * 8)); \
+    for (int j = size - 1; j >= 0; j--) data += (req[i++] << (j * 8)); \
   }
 
 #define PAQUET_SIZE 1024
