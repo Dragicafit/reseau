@@ -129,14 +129,14 @@ uint8_t* arcParser(paquet* p) {
   int data_size;
 
   uint8_t* req = malloc(4 + p->body_length);
-  memset(req, 0, sizeof(req));
+  memset(req, 0, 4 + p->body_length);
   req[0] = p->magic;
   req[1] = p->version;
   *((uint16_t*)&req[2]) = htobe16(p->body_length);
 
   if (req[0] != 95) return NULL;
   if (req[1] != 1) return NULL;
-  if (sizeof(req) > PAQUET_SIZE) return NULL;
+  if (4 + p->body_length > PAQUET_SIZE) return NULL;
 
   int count = 4;
   for (int i = 0; i < p->length; i++) {
@@ -145,7 +145,7 @@ uint8_t* arcParser(paquet* p) {
     if (t->type == 0) return NULL;
     req[count++] = t->type;
     req[count++] = t->length;
-    if (count + t->length - 1 > sizeof(req)) return NULL;
+    if (count + t->length - 1 > 4 + p->body_length) return NULL;
     switch (t->type) {
       case 1:
         for (int j = 0; j < t->length; j++) {
