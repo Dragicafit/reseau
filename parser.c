@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "affichage.h"
 #include "constantes.h"
 #include "modele.h"
 

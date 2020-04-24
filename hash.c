@@ -22,12 +22,43 @@ __uint128_t nodeHash(donnee* donnee) {
   return h;
 }
 
+void tri(donnee* donnees[], int posDonnee[], int first, int last) {
+  int i, j, pivot, temp;
+
+  if (first < last) {
+    pivot = first;
+    i = first;
+    j = last;
+
+    while (i < j) {
+      while (donnees[posDonnee[i]] <= donnees[posDonnee[pivot]] && i < last)
+        i++;
+      while (donnees[posDonnee[j]] > donnees[posDonnee[pivot]]) j--;
+      if (i < j) {
+        temp = posDonnee[i];
+        posDonnee[i] = posDonnee[j];
+        posDonnee[j] = temp;
+      }
+    }
+
+    temp = posDonnee[pivot];
+    posDonnee[pivot] = posDonnee[j];
+    posDonnee[j] = temp;
+    tri(donnees, posDonnee, first, j - 1);
+    tri(donnees, posDonnee, j + 1, last);
+  }
+}
+
 __uint128_t networkHash(donnee* donnees[]) {
+  int posDonnee[DONNEES_SIZE];
+  for (int i = 0; i < DONNEES_SIZE; i++) posDonnee[i] = i;
+  tri(donnees, posDonnee, 0, DONNEES_SIZE);
+
   __uint128_t h;
   __uint128_t concDonnee[sizeof(__uint128_t) * DONNEES_SIZE] = {0};
   int count = 0;
   for (int i = 0; i < DONNEES_SIZE; i++) {
-    donnee* d = donnees[i];
+    donnee* d = donnees[posDonnee[i]];
     if (d == NULL) continue;
     __uint128_t h1 = nodeHash(d);
     concDonnee[count++] = h1;
