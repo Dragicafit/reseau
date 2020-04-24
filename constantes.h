@@ -18,5 +18,6 @@
 #define DATA_SIZE 192
 #define VOISINS_SIZE 100
 #define DONNEES_SIZE 1000
+#define MAX_VOISINS 15
 
 #endif

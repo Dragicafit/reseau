@@ -41,5 +41,7 @@ typedef struct {
 uint16_t sum(uint16_t seqno, int n);
 char less_or_equals(uint16_t seqno1, uint16_t seqno2);
 uint64_t random_id();
+int sock_addr_cmp_addr(addr* sa, struct sockaddr_in6* sb);
+struct sockaddr* addrToSockaddr(addr* ad);
 
 #endif

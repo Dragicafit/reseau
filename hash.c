@@ -49,15 +49,15 @@ void tri(donnee* donnees[], int posDonnee[], int first, int last) {
   }
 }
 
-__uint128_t networkHash(donnee* donnees[]) {
-  int posDonnee[DONNEES_SIZE];
-  for (int i = 0; i < DONNEES_SIZE; i++) posDonnee[i] = i;
-  tri(donnees, posDonnee, 0, DONNEES_SIZE);
+__uint128_t networkHash(donnee* donnees[], int nbDonnees) {
+  int* posDonnee = malloc(sizeof(int) * nbDonnees);
+  for (int i = 0; i < nbDonnees; i++) posDonnee[i] = i;
+  tri(donnees, posDonnee, 0, nbDonnees);
 
   __uint128_t h;
   __uint128_t concDonnee[sizeof(__uint128_t) * DONNEES_SIZE] = {0};
   int count = 0;
-  for (int i = 0; i < DONNEES_SIZE; i++) {
+  for (int i = 0; i < nbDonnees; i++) {
     donnee* d = donnees[posDonnee[i]];
     if (d == NULL) continue;
     __uint128_t h1 = nodeHash(d);
