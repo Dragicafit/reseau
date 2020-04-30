@@ -1,5 +1,7 @@
 #include "tlv.h"
 
+#include <stdlib.h>
+
 #include "constantes.h"
 #include "hash.h"
 #include "modele.h"
@@ -27,7 +29,7 @@ paquet* creerPaquetTlv3(addr* ad) {
   return p;
 }
 
-paquet* creerPaquetTlv4(donnee* donnees[]) {
+paquet* creerPaquetTlv4(donnee* donnees[], int nbDonnees) {
   paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
   p->magic = 95;
   p->version = 1;
@@ -35,7 +37,7 @@ paquet* creerPaquetTlv4(donnee* donnees[]) {
   tlv* t = calloc(1, sizeof(tlv) + 16);
   p->body[0] = t;
   t->type = 4;
-  t->network_hash = networkHash(donnees);
+  t->network_hash = networkHash(donnees, nbDonnees);
   return p;
 }
 
@@ -55,12 +57,35 @@ paquet* creerPaquetTlv6(donnee* donnees[], int nbDonnees) {
   p->magic = 95;
   p->version = 1;
   p->length = sizeof(tlv*) * nbDonnees;
-  for (int i = 0; i < nbDonnees; i++) {
+  for (int i = 0; i < min(nbDonnees, 5); i++) {
     tlv* t = calloc(1, sizeof(tlv));
     p->body[i] = t;
     t->type = 6;
     t->data = donnees[i];
-    t->node_hash = nodeHash(donnees[i]);
   }
+  return p;
+}
+
+paquet* creerPaquetTlv7(uint64_t id) {
+  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
+  p->magic = 95;
+  p->version = 1;
+  p->length = sizeof(tlv*);
+  tlv* t = calloc(1, sizeof(tlv));
+  p->body[0] = t;
+  t->type = 7;
+  t->data->id = id;
+  return p;
+}
+
+paquet* creerPaquetTlv8(donnee* d) {
+  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
+  p->magic = 95;
+  p->version = 1;
+  p->length = sizeof(tlv*);
+  tlv* t = calloc(1, sizeof(tlv));
+  p->body[0] = t;
+  t->type = 8;
+  t->data = d;
   return p;
 }

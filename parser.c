@@ -74,7 +74,7 @@ paquet* parser(uint8_t req[]) {
         t->data = malloc(sizeof(donnee));
         bigIndia(i, req, t->data->id, 8);
         bigIndia(i, req, t->data->seqno, 2);
-        bigIndia(i, req, t->node_hash, 16);
+        bigIndia(i, req, t->data->node_hash, 16);
         break;
       case 7:
         t->data = malloc(sizeof(donnee));
@@ -86,7 +86,7 @@ paquet* parser(uint8_t req[]) {
         t->data = malloc(sizeof(donnee) + data_size + 1);
         bigIndia(i, req, t->data->id, 8);
         bigIndia(i, req, t->data->seqno, 2);
-        bigIndia(i, req, t->node_hash, 16);
+        bigIndia(i, req, t->data->node_hash, 16);
         memcpy(t->data->data, &req[i], data_size);
         t->data->data[data_size] = '\0';
         t->data->length = data_size;
@@ -167,7 +167,7 @@ uint8_t* arcParser(paquet* p) {
         count += 8;
         memcpy(&tlv_body[count], &t->data->seqno, 2);
         count += 2;
-        memcpy(&tlv_body[count], &t->node_hash, 16);
+        memcpy(&tlv_body[count], &t->data->node_hash, 16);
         count += 16;
         break;
       case 7:
@@ -181,7 +181,7 @@ uint8_t* arcParser(paquet* p) {
         count += 8;
         memcpy(&tlv_body[count], &t->data->seqno, 2);
         count += 2;
-        memcpy(&tlv_body[count], &t->node_hash, 16);
+        memcpy(&tlv_body[count], &t->data->node_hash, 16);
         count += 16;
         memcpy(&tlv_body[count], t->data->data, data_size);
         count += data_size;

@@ -1,6 +1,7 @@
 #include "hash.h"
 
 #include <openssl/sha.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -60,7 +61,7 @@ __uint128_t networkHash(donnee* donnees[], int nbDonnees) {
   for (int i = 0; i < nbDonnees; i++) {
     donnee* d = donnees[posDonnee[i]];
     if (d == NULL) continue;
-    __uint128_t h1 = nodeHash(d);
+    __uint128_t h1 = d->node_hash;
     concDonnee[count++] = h1;
   }
   SHA256((uint8_t*)concDonnee, count, (uint8_t*)&h);

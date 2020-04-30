@@ -13,22 +13,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "constantes.h"
-#include "hash.h"
-#include "modele.h"
-#include "parser.h"
-#include "tlv.h"
+// tester htons
 
-int main(int argc, char const* argv[]) {
-  int nbVoisins = 0;
-  int* pointerNbVoisins = &nbVoisins;
-
-  if (fork()) {
-    sleep(5);
+int test(int argc, char const* argv[]) {
+  char test[] = {1, 2, 3, 4};
+  int data = 0;
+  for (int i = 0; i < 4; i++) {
+    ((uint8_t*)&data)[4 - (i + 1)] = test[i];
   }
-
-  (*pointerNbVoisins)++;
-  printf("fils : %d, %d, %d, %d\n", *pointerNbVoisins, &nbVoisins,
-         pointerNbVoisins, nbVoisins);
+  printf("%x\n", data);
+  data = 0;
+  int i = 0;
+  for (int j = 4 - 1; j >= 0; j--) data += (test[i++] << (j * 8));
+  printf("%x\n", data);
   return 0;
 }

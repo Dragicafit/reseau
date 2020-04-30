@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
@@ -17,10 +18,11 @@ char less_or_equals(uint16_t seqno1, uint16_t seqno2) {
   return ((seqno2 - seqno1) & 32768) == 0;
 }
 
-uint64_t random_id() { return (uint64_t)(rand() % ((int)(pow(2, 63)) - 1)); }
+// regarder comment utiliser initiate
+uint64_t random_id() { return (uint64_t)rand(); }
 
 int sock_addr_cmp_addr(addr *sa, struct sockaddr_in6 *sb) {
-  return memcmp((char *)&sa->ip, (char *)&sb->sin6_addr, sizeof(sa)) &&
+  return memcmp((char *)&sa->ip, (char *)&sb->sin6_addr, sizeof(sa)) == 0 &&
          sa->port == sb->sin6_port;
 }
 

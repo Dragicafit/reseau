@@ -1,4 +1,4 @@
-
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@ void printPaquet(paquet* p) {
   printf("nb tlv : \t\t%lu\n", p->length / sizeof(tlv*));
   char ip[INET6_ADDRSTRLEN];
 
-  for (int i = 0; i < p->length / sizeof(tlv*); i++) {
+  for (int i = 0; i < min(p->length / sizeof(tlv*), 5); i++) {
     tlv* t = p->body[i];
     if (t->type == 0) {
       i++;
@@ -32,9 +32,9 @@ void printPaquet(paquet* p) {
         break;
       case 6:
         printf("id : \t\t\t%lu\n", t->data->id);
-        printf("seqno : \t\t\t%hu\n", t->data->seqno);
-        printf("node hash : \t\t%lx%lx\n", ((uint64_t*)&t->node_hash)[0],
-               ((uint64_t*)&t->node_hash)[1]);
+        printf("seqno : \t\t%hu\n", t->data->seqno);
+        printf("node hash : \t\t%lx%lx\n", ((uint64_t*)&t->data->node_hash)[0],
+               ((uint64_t*)&t->data->node_hash)[1]);
         break;
       case 7:
         printf("id : \t\t\t%lu\n", t->data->id);
@@ -42,9 +42,9 @@ void printPaquet(paquet* p) {
       case 8:
         printf("length : \t\t%lu\n", t->data->length);
         printf("id : \t\t\t%lu\n", t->data->id);
-        printf("seqno : \t\t\t%hu\n", t->data->seqno);
-        printf("node hash : \t\t%lx%lx\n", ((uint64_t*)&t->node_hash)[0],
-               ((uint64_t*)&t->node_hash)[1]);
+        printf("seqno : \t\t%hu\n", t->data->seqno);
+        printf("node hash : \t\t%lx%lx\n", ((uint64_t*)&t->data->node_hash)[0],
+               ((uint64_t*)&t->data->node_hash)[1]);
         printf("data : \t\t\t%s\n", t->data->data);
         break;
       case 9:

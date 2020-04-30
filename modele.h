@@ -9,6 +9,7 @@ typedef struct {
   uint64_t id;
   uint16_t seqno;
   size_t length;
+  __uint128_t node_hash;
   char data[];
 } donnee;
 
@@ -27,7 +28,6 @@ typedef struct {
   uint8_t type;
   addr address;
   __uint128_t network_hash;
-  __uint128_t node_hash;
   donnee* data;
 } tlv;
 
