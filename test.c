@@ -5,6 +5,7 @@
 #endif
 
 #include <arpa/inet.h>
+#include <endian.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,15 +17,9 @@
 // tester htons
 
 int test(int argc, char const* argv[]) {
-  char test[] = {1, 2, 3, 4};
-  int data = 0;
-  for (int i = 0; i < 4; i++) {
-    ((uint8_t*)&data)[4 - (i + 1)] = test[i];
-  }
-  printf("%x\n", data);
-  data = 0;
-  int i = 0;
-  for (int j = 4 - 1; j >= 0; j--) data += (test[i++] << (j * 8));
-  printf("%x\n", data);
+  char test[] = {1, 2};
+  printf("%x\n", ntohs(*(uint16_t*)&test[0]));
+
+  printf("%d\n", htons(12));
   return 0;
 }

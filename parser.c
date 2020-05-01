@@ -2,6 +2,7 @@
 #include "parser.h"
 
 #include <arpa/inet.h>
+#include <endian.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,8 +33,7 @@ paquet* parser(uint8_t req[]) {
   memset(p, 0, sizeof(paquet));
   p->magic = req[0];
   p->version = req[1];
-  body_length = (req[2] << 8) + req[3];
-
+  body_length = ntohs(*(uint16_t*)&req[2]);
   if (p->magic != 95) return NULL;
   if (p->version != 1) return NULL;
   if (body_length + 4 > PAQUET_SIZE) return NULL;
@@ -62,31 +62,46 @@ paquet* parser(uint8_t req[]) {
       case 3:
         memcpy(&t->address.ip, &req[i], 16);
         i += 16;
-        t->address.port = htons((req[i++] << 8) + req[i++]);
+        t->address.port = ntohs(*(uint16_t*)&req[i]);
+        i += 2;
         break;
       case 4:
-        bigIndia(i, req, t->network_hash, 16);
+        ((uint64_t*)&t->network_hash)[0] = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
+        ((uint64_t*)&t->network_hash)[1] = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
         break;
       case 5:
         if (tlv_length != 0) return NULL;
         break;
       case 6:
         t->data = malloc(sizeof(donnee));
-        bigIndia(i, req, t->data->id, 8);
-        bigIndia(i, req, t->data->seqno, 2);
-        bigIndia(i, req, t->data->node_hash, 16);
+        t->data->id = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
+        t->data->seqno = ntohs(*(uint16_t*)&req[i]);
+        i += 2;
+        ((uint64_t*)&t->data->node_hash)[0] = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
+        ((uint64_t*)&t->data->node_hash)[1] = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
         break;
       case 7:
         t->data = malloc(sizeof(donnee));
-        bigIndia(i, req, t->data->id, 8);
+        t->data->id = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
         break;
       case 8:
         data_size = tlv_length - 26;
         if (data_size > DATA_SIZE) return NULL;
         t->data = malloc(sizeof(donnee) + data_size + 1);
-        bigIndia(i, req, t->data->id, 8);
-        bigIndia(i, req, t->data->seqno, 2);
-        bigIndia(i, req, t->data->node_hash, 16);
+        t->data->id = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
+        t->data->seqno = ntohs(*(uint16_t*)&req[i]);
+        i += 2;
+        ((uint64_t*)&t->data->node_hash)[0] = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
+        ((uint64_t*)&t->data->node_hash)[1] = be64toh(*(uint64_t*)&req[i]);
+        i += 8;
         memcpy(t->data->data, &req[i], data_size);
         t->data->data[data_size] = '\0';
         t->data->length = data_size;
@@ -153,36 +168,48 @@ uint8_t* arcParser(paquet* p) {
       case 3:
         memcpy(&tlv_body[count], &t->address.ip, 16);
         count += 16;
-        memcpy(&tlv_body[count], &t->address.port, 2);
+        *(uint16_t*)&tlv_body[count] = htons(t->address.port);
         count += 2;
         break;
       case 4:
-        memcpy(&tlv_body[count], &t->network_hash, 16);
-        count += 16;
+        *(uint64_t*)&tlv_body[count] =
+            htobe64(((uint64_t*)&t->data->node_hash)[0]);
+        count += 8;
+        *(uint64_t*)&tlv_body[count] =
+            htobe64(((uint64_t*)&t->data->node_hash)[1]);
+        count += 8;
         break;
       case 5:
         break;
       case 6:
-        memcpy(&tlv_body[count], &t->data->id, 8);
+        *(uint64_t*)&tlv_body[count] = htobe64(t->data->id);
         count += 8;
-        memcpy(&tlv_body[count], &t->data->seqno, 2);
+        *(uint16_t*)&tlv_body[count] = htons(t->data->seqno);
         count += 2;
-        memcpy(&tlv_body[count], &t->data->node_hash, 16);
-        count += 16;
+        *(uint64_t*)&tlv_body[count] =
+            htobe64(((uint64_t*)&t->data->node_hash)[0]);
+        count += 8;
+        *(uint64_t*)&tlv_body[count] =
+            htobe64(((uint64_t*)&t->data->node_hash)[1]);
+        count += 8;
         break;
       case 7:
-        memcpy(&tlv_body[count], &t->data->id, 8);
+        *(uint64_t*)&tlv_body[count] = htobe64(t->data->id);
         count += 8;
         break;
       case 8:
         data_size = t->data->length;
         if (data_size > DATA_SIZE) return NULL;
-        memcpy(&tlv_body[count], &t->data->id, 8);
+        *(uint64_t*)&tlv_body[count] = htobe64(t->data->id);
         count += 8;
-        memcpy(&tlv_body[count], &t->data->seqno, 2);
+        *(uint16_t*)&tlv_body[count] = htons(t->data->seqno);
         count += 2;
-        memcpy(&tlv_body[count], &t->data->node_hash, 16);
-        count += 16;
+        *(uint64_t*)&tlv_body[count] =
+            htobe64(((uint64_t*)&t->data->node_hash)[0]);
+        count += 8;
+        *(uint64_t*)&tlv_body[count] =
+            htobe64(((uint64_t*)&t->data->node_hash)[1]);
+        count += 8;
         memcpy(&tlv_body[count], t->data->data, data_size);
         count += data_size;
         break;
@@ -204,7 +231,7 @@ uint8_t* arcParser(paquet* p) {
   memset(req, 0, 4 + paquet_size);
   req[0] = p->magic;
   req[1] = p->version;
-  *((uint16_t*)&req[2]) = htole16(be16toh(paquet_size));
+  *(uint16_t*)&req[2] = htons(paquet_size);
   memcpy(&req[4], tlvList, paquet_size);
 
   if (req[0] != 95) return NULL;

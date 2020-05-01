@@ -7,13 +7,6 @@
     exit(EXIT_FAILURE);   \
   } while (0)
 
-#define bigIndia(i, req, data, size)                \
-  {                                                 \
-    data = 0;                                       \
-    for (int j = 0; j < size; j++)                  \
-      ((uint8_t*)&data)[size - (j + 1)] = req[i++]; \
-  }
-
 #define max(a, b)           \
   ({                        \
     __typeof__(a) _a = (a); \
@@ -35,5 +28,8 @@
 #define VOISINS_SIZE 100
 #define DONNEES_SIZE 1000
 #define MAX_VOISINS 15
+#define INTERVAL_20 20
+#define INTERVAL_70 70
+#define MAX_SEND_TLV2 5
 
 #endif

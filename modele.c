@@ -11,15 +11,14 @@
 #include <unistd.h>
 
 uint16_t sum(uint16_t seqno, int n) {
-  return (uint16_t)((seqno + n) % (int)pow(2, 16));
+  return (uint16_t)((seqno + n) % UINT16_MAX);
 }
 
 char less_or_equals(uint16_t seqno1, uint16_t seqno2) {
-  return ((seqno2 - seqno1) & 32768) == 0;
+  return ((seqno2 - seqno1) & (INT16_MAX + 1)) == 0;
 }
 
-// regarder comment utiliser initiate
-uint64_t random_id() { return (uint64_t)rand(); }
+uint64_t random_id() { return ((uint64_t)rand() << 32 | rand()); }
 
 int sock_addr_cmp_addr(addr *sa, struct sockaddr_in6 *sb) {
   return memcmp((char *)&sa->ip, (char *)&sb->sin6_addr, sizeof(sa)) == 0 &&
