@@ -105,7 +105,7 @@ int main(int argc, char const* argv[]) {
         rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                     addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
         if (rc < 0) handle_error("select error");
-        write(0, "Envoi d'un TLV4 a un voisin \n", 28);
+        write(0, "Envoi d'un TLV4 a un voisin\n", 28);
 
         printPaquet(p);
 
