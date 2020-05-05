@@ -15,6 +15,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "affichage.h"
 #include "constantes.h"
 #include "hash.h"
 #include "modele.h"
@@ -81,7 +82,7 @@ int main(int argc, char const* argv[]) {
   memset(&serv, 0, serv_len);
   serv.sin6_family = AF_INET6;
   serv.sin6_port = htons(1212);
-  if (inet_pton(AF_INET6, ipv6 ? IPV6_PROF : IPV4_PROF, &serv.sin6_addr) < 1)
+  if (inet_pton(AF_INET6, IPV4_TEST, &serv.sin6_addr) < 1)
     handle_error("inet error");
 
   voisins[0] = calloc(1, sizeof(voisin));
@@ -99,11 +100,14 @@ int main(int argc, char const* argv[]) {
       tempsDebut = time(NULL);
       for (int i = 0; i < nbVoisins; i++) {
         voisin* v = voisins[i];
-        envoi = arcParser(creerPaquetTlv4(donnees, nbDonnees));
+        paquet* p = creerPaquetTlv4(donnees, nbDonnees);
+        envoi = arcParser(p);
         rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                     addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
         if (rc < 0) handle_error("select error");
         write(0, "Envoi d'un TLV4 a un voisin\n", 28);
+
+        printPaquet(p);
 
         if (voisins[i]->permanent) continue;
 
@@ -116,11 +120,14 @@ int main(int argc, char const* argv[]) {
 
       if (nbVoisins > MAX_SEND_TLV2) continue;
       voisin* v = voisins[rand() % nbVoisins];
-      envoi = arcParser(creerPaquetTlv2());
+      paquet* p = creerPaquetTlv2();
+      envoi = arcParser(p);
       rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                   addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
       if (rc < 0) handle_error("select error");
       write(0, "Envoi d'un TLV2 a un voisin aléatoire\n", 39);
+
+      printPaquet(p);
     }
 
     fd_set set;
@@ -166,35 +173,44 @@ int main(int argc, char const* argv[]) {
     for (int i = 0; i < p->length / sizeof(tlv*); i++) {
       printf("Gestion du tlv n°%d\n", i);
       tlv* t = p->body[i];
+      paquet* p;
       voisin* v;
       donnee* d = NULL;
       int position;
       switch (t->type) {
         case 2:
           v = voisins[rand() % nbVoisins];
-          envoi = arcParser(creerPaquetTlv3(&v->s));
+          p = creerPaquetTlv3(&v->s);
+          envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
           write(0, "Envoi d'un tlv 3\n", 17);
+          printPaquet(p);
           break;
         case 3:
-          envoi = arcParser(creerPaquetTlv4(donnees, nbDonnees));
+          p = creerPaquetTlv4(donnees, nbDonnees);
+          envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  addrToSockaddr(&t->address), sizeof(struct sockaddr_in6));
           write(0, "Envoi d'un tlv 4\n", 17);
+          printPaquet(p);
           break;
         case 4:
           if (networkHash(donnees, nbDonnees) == t->network_hash) continue;
-          envoi = arcParser(creerPaquetTlv5());
+          p = creerPaquetTlv5();
+          envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&serv, serv_len);
           write(0, "Envoi d'un tlv 5\n", 17);
+          printPaquet(p);
           break;
         case 5:
-          envoi = arcParser(creerPaquetTlv6(donnees, nbDonnees));
+          p = creerPaquetTlv6(donnees, nbDonnees);
+          envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&serv, serv_len);
           write(0, "Envoi d'une liste de tlv 6\n", 27);
+          printPaquet(p);
           break;
         case 6:
           for (int j = 0; j < nbDonnees; j++) {
@@ -203,10 +219,12 @@ int main(int argc, char const* argv[]) {
           }
           if (d == NULL) continue;
           if (d->node_hash == t->data->node_hash) continue;
-          envoi = arcParser(creerPaquetTlv7(t->data->id));
+          p = creerPaquetTlv7(t->data->id);
+          envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&serv, serv_len);
           write(0, "Envoi d'un tlv 7\n", 17);
+          printPaquet(p);
           break;
         case 7:
           for (int j = 0; j < nbDonnees; j++) {
@@ -214,10 +232,12 @@ int main(int argc, char const* argv[]) {
             if (d->id == t->data->id) break;
           }
           if (d == NULL) continue;
-          envoi = arcParser(creerPaquetTlv8(d));
+          p = creerPaquetTlv8(d);
+          envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&serv, serv_len);
           write(0, "Envoi d'un tlv 8\n", 17);
+          printPaquet(p);
           break;
         case 8:
           for (int j = 0; j < nbDonnees; j++) {
