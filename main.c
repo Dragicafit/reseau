@@ -105,7 +105,7 @@ int main(int argc, char const* argv[]) {
         rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                     addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
         if (rc < 0) handle_error("select error");
-        write(0, "Envoi d'un TLV4 a un voisin\n", 28);
+        write(0, "Envoi d'un TLV4 a un voisin \n", 28);
 
         printPaquet(p);
 
@@ -200,7 +200,7 @@ int main(int argc, char const* argv[]) {
           p = creerPaquetTlv5();
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
-                 (struct sockaddr*)&serv, serv_len);
+                 (struct sockaddr*)&client, client_len);
           write(0, "Envoi d'un tlv 5\n", 17);
           printPaquet(p);
           break;
@@ -208,7 +208,7 @@ int main(int argc, char const* argv[]) {
           p = creerPaquetTlv6(donnees, nbDonnees);
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
-                 (struct sockaddr*)&serv, serv_len);
+                 (struct sockaddr*)&client, client_len);
           write(0, "Envoi d'une liste de tlv 6\n", 27);
           printPaquet(p);
           break;
@@ -222,7 +222,7 @@ int main(int argc, char const* argv[]) {
           p = creerPaquetTlv7(t->data->id);
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
-                 (struct sockaddr*)&serv, serv_len);
+                 (struct sockaddr*)&client, client_len);
           write(0, "Envoi d'un tlv 7\n", 17);
           printPaquet(p);
           break;
@@ -235,7 +235,7 @@ int main(int argc, char const* argv[]) {
           p = creerPaquetTlv8(d);
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
-                 (struct sockaddr*)&serv, serv_len);
+                 (struct sockaddr*)&client, client_len);
           write(0, "Envoi d'un tlv 8\n", 17);
           printPaquet(p);
           break;
