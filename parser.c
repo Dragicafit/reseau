@@ -173,10 +173,10 @@ uint8_t* arcParser(paquet* p) {
         break;
       case 4:
         *(uint64_t*)&tlv_body[count] =
-            htobe64(((uint64_t*)&t->data->node_hash)[0]);
+            htobe64(((uint64_t*)&t->network_hash)[0]);
         count += 8;
         *(uint64_t*)&tlv_body[count] =
-            htobe64(((uint64_t*)&t->data->node_hash)[1]);
+            htobe64(((uint64_t*)&t->network_hash)[1]);
         count += 8;
         break;
       case 5:
