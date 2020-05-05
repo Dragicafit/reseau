@@ -31,5 +31,8 @@
 #define INTERVAL_20 20
 #define INTERVAL_70 70
 #define MAX_SEND_TLV2 5
+#define IPV6_PROF "2001:660:3301:9200::51c2:1b9b"
+#define IPV4_PROF "::ffff:81.194.27.155"
+#define IPV4_TEST "::ffff:89.92.119.40"
 
 #endif

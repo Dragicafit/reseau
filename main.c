@@ -21,7 +21,7 @@
 #include "parser.h"
 #include "tlv.h"
 
-uint64_t id;
+uint64_t id = 0;
 voisin* voisins[VOISINS_SIZE] = {NULL};
 donnee* donnees[DONNEES_SIZE] = {NULL};
 int nbVoisins = 0;
@@ -29,7 +29,23 @@ int nbDonnees = 0;
 
 int main(int argc, char const* argv[]) {
   srand(time(NULL));
-  id = random_id();
+
+  FILE* f = fopen("id.txt", "r+");
+  if (f == NULL) {
+    f = fopen("id.txt", "w+");
+    if (f == NULL) {
+      handle_error("Impossible de créer le fichier");
+    }
+  }
+
+  fscanf(f, "%lu", &id);
+
+  if (id == 0) {
+    id = random_id();
+    fprintf(f, "%lu", id);
+  }
+  fclose(f);
+
   write(0, "\n", 1);
 
   printf("id : %lu\n", id);
@@ -65,9 +81,7 @@ int main(int argc, char const* argv[]) {
   memset(&serv, 0, serv_len);
   serv.sin6_family = AF_INET6;
   serv.sin6_port = htons(1212);
-  if (inet_pton(AF_INET6,
-                ipv6 ? "2001:660:3301:9200::51c2:1b9b" : "::ffff:81.194.27.155",
-                &serv.sin6_addr) < 1)
+  if (inet_pton(AF_INET6, ipv6 ? IPV6_PROF : IPV4_PROF, &serv.sin6_addr) < 1)
     handle_error("inet error");
 
   voisins[0] = calloc(1, sizeof(voisin));
