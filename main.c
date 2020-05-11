@@ -147,6 +147,10 @@ int main(int argc, char const* argv[]) {
 
     write(0, "Réception d'un paquet\n", 23);
 
+    char ip[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6, &client.sin6_addr, ip, INET6_ADDRSTRLEN);
+    printf("ip : \t\t\t%s:%hu\n", ip, ntohs(client.sin6_port));
+
     p = parser(req);
     if (p == NULL) continue;
 
