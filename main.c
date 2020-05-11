@@ -223,8 +223,7 @@ int main(int argc, char const* argv[]) {
             d = donnees[j];
             if (d->id != t->data->id) break;
           }
-          if (d == NULL) continue;
-          if (d->node_hash == t->data->node_hash) continue;
+          if (d != NULL && d->node_hash == t->data->node_hash) continue;
           p = creerPaquetTlv7(t->data->id);
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
