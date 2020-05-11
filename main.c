@@ -189,7 +189,7 @@ int main(int argc, char const* argv[]) {
           p = creerPaquetTlv3(&v->s);
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
-                 addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
+                 (struct sockaddr*)&client, client_len);
           write(0, "Envoi d'un tlv 3\n", 17);
           printPaquet(p);
           break;
