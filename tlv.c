@@ -74,6 +74,7 @@ paquet* creerPaquetTlv7(uint64_t id) {
   tlv* t = calloc(1, sizeof(tlv));
   p->body[0] = t;
   t->type = 7;
+  t->data = calloc(1, sizeof(donnee));
   t->data->id = id;
   return p;
 }
