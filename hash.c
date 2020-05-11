@@ -1,5 +1,6 @@
-#include "hash.h"
+#define _GNU_SOURCE
 
+#include <endian.h>
 #include <openssl/sha.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,16 +11,19 @@
 
 __uint128_t nodeHash(donnee* donnee) {
   __uint128_t h;
-  char concDonnee[8 + 2 + DATA_SIZE] = "";
-  char strId[9];
-  memcpy(strId, &donnee->id, 8);
-  strId[8] = '\0';
-  strcat(concDonnee, strId);
-  memcpy(strId, &donnee->seqno, 2);
-  strId[2] = '\0';
-  strcat(concDonnee, strId);
-  strcat(concDonnee, donnee->data);
-  SHA256((uint8_t*)concDonnee, strlen(concDonnee), (uint8_t*)&h);
+  uint8_t buff[32];
+
+  char concDonnee[sizeof(uint64_t) + sizeof(uint16_t) + DATA_SIZE] = {0};
+  *(uint64_t*)concDonnee = htobe64(donnee->id);
+  *(uint16_t*)&concDonnee[8] = donnee->seqno;
+  memcpy(&concDonnee[10], donnee->data, donnee->length);
+
+  SHA256((uint8_t*)concDonnee,
+         sizeof(uint64_t) + sizeof(uint16_t) + donnee->length, buff);
+
+  ((uint64_t*)&h)[0] = be64toh(*(uint64_t*)buff);
+  ((uint64_t*)&h)[1] = be64toh(*(uint64_t*)&buff[8]);
+
   return h;
 }
 
