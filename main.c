@@ -51,6 +51,16 @@ int main(int argc, char const* argv[]) {
 
   printf("id : %lu\n", id);
 
+  donnee* d = calloc(1, sizeof(donnee) + 25);
+  d->id = id;
+  memcpy(d->data, "nfghfghjkfghlkfjghlkfhjj", 25);
+  d->length = 25;
+  d->seqno = 0;
+  d->node_hash = nodeHash(d);
+  donnees[0] = d;
+
+  nbDonnees++;
+
   int s, val = 1, rc;
   paquet* p;
   uint8_t req[PAQUET_SIZE] = {0};
@@ -82,7 +92,8 @@ int main(int argc, char const* argv[]) {
   memset(&serv, 0, serv_len);
   serv.sin6_family = AF_INET6;
   serv.sin6_port = htons(1212);
-  if (inet_pton(AF_INET6, ipv6 ? IPV6_PROF : strcat("::ffff:", IPV4_PROF),
+  char ipv4[INET6_ADDRSTRLEN] = "::ffff:";
+  if (inet_pton(AF_INET6, ipv6 ? IPV6_PROF : strcat(ipv4, IPV4_PROF),
                 &serv.sin6_addr) < 1)
     handle_error("inet error");
 
