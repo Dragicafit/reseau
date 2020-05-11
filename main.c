@@ -119,6 +119,8 @@ int main(int argc, char const* argv[]) {
       }
 
       if (nbVoisins > MAX_SEND_TLV2) continue;
+      if (nbVoisins < 1) continue;
+
       voisin* v = voisins[rand() % nbVoisins];
       paquet* p = creerPaquetTlv2();
       envoi = arcParser(p);
