@@ -82,7 +82,8 @@ int main(int argc, char const* argv[]) {
   memset(&serv, 0, serv_len);
   serv.sin6_family = AF_INET6;
   serv.sin6_port = htons(1212);
-  if (inet_pton(AF_INET6, IPV4_TEST, &serv.sin6_addr) < 1)
+  if (inet_pton(AF_INET6, ipv6 ? IPV6_PROF : strcat("::ffff:", IPV4_PROF),
+                &serv.sin6_addr) < 1)
     handle_error("inet error");
 
   voisins[0] = calloc(1, sizeof(voisin));
