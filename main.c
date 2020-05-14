@@ -274,6 +274,7 @@ int main(int argc, char* argv[]) {
             d = donnees[j];
             position = j;
             if (d->id == t->data->id) break;
+            d = NULL;
           }
           if (t->data->id != id) {
             if (d == NULL) {
