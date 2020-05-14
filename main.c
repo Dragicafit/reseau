@@ -237,14 +237,11 @@ int main(int argc, char* argv[]) {
           break;
         case 5:
           p = creerPaquetTlv6(donnees, nbDonnees);
-          printf("nb = %d\n\n", nbDonnees);
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
           printDebug("Envoi d'une liste de tlv 6\n");
-          debug = 1;
           printPaquet(p);
-          debug = 0;
           break;
         case 6:
           for (int j = 0; j < nbDonnees; j++) {
