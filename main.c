@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
     }
     voisins[present]->last_change = time(NULL);
 
-    for (int i = 0; i < p->length / sizeof(tlv*); i++) {
+    for (int i = 0; i < p->length; i++) {
       printDebug("Gestion du tlv n°%d\n", i);
       tlv* t = p->body[i];
       paquet* p;

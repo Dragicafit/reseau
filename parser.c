@@ -123,8 +123,8 @@ paquet* parser(uint8_t req[]) {
   }
 
   p = realloc(p, sizeof(paquet) + sizeof(tlv*) * count);
-  p->length = count * sizeof(tlv*);
-  for (int i = 0; i < p->length / sizeof(tlv*); i++) {
+  p->length = count;
+  for (int i = 0; i < p->length; i++) {
     p->body[i] = list[i];
   }
 
@@ -152,7 +152,8 @@ uint8_t* arcParser(paquet* p) {
 
   uint8_t tlvList[PAQUET_SIZE - 4];
 
-  for (int i = 0; i < p->length / sizeof(tlv*); i++) {
+  for (int i = 0; i < p->length; i++) {
+    if (paquet_size + 4 > PAQUET_SIZE) break;
     int count = 0;
     tlv* t = p->body[i];
     if (t == NULL) return NULL;
@@ -236,7 +237,6 @@ uint8_t* arcParser(paquet* p) {
 
   if (req[0] != 95) return NULL;
   if (req[1] != 1) return NULL;
-  if (4 + paquet_size > PAQUET_SIZE) return NULL;
 
   return req;
 }

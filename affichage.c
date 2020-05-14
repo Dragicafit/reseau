@@ -20,10 +20,10 @@ int printDebug(const char* format, ...) {
 void printPaquet(paquet* p) {
   printDebug("magic : \t\t%hhu\n", p->magic);
   printDebug("version : \t\t%hhu\n", p->version);
-  printDebug("nb tlv : \t\t%lu\n", p->length / sizeof(tlv*));
+  printDebug("nb tlv : \t\t%lu\n", p->length);
   char ip[INET6_ADDRSTRLEN];
 
-  for (int i = 0; i < min(p->length / sizeof(tlv*), 5); i++) {
+  for (int i = 0; i < p->length; i++) {
     tlv* t = p->body[i];
     if (t->type == 0) {
       i++;
@@ -69,5 +69,4 @@ void printPaquet(paquet* p) {
     }
     printDebug("\n");
   }
-  fflush(stdout);
 }

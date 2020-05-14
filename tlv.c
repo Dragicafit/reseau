@@ -7,10 +7,7 @@
 #include "modele.h"
 
 paquet* creerPaquetTlv2() {
-  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
-  p->magic = 95;
-  p->version = 1;
-  p->length = sizeof(tlv*);
+  paquet* p = creerPaquet(1);
   tlv* t = calloc(1, sizeof(tlv));
   p->body[0] = t;
   t->type = 2;
@@ -18,10 +15,7 @@ paquet* creerPaquetTlv2() {
 }
 
 paquet* creerPaquetTlv3(addr* ad) {
-  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
-  p->magic = 95;
-  p->version = 1;
-  p->length = sizeof(tlv*);
+  paquet* p = creerPaquet(1);
   tlv* t = calloc(1, sizeof(tlv));
   p->body[0] = t;
   t->type = 3;
@@ -30,10 +24,7 @@ paquet* creerPaquetTlv3(addr* ad) {
 }
 
 paquet* creerPaquetTlv4(donnee* donnees[], int nbDonnees) {
-  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
-  p->magic = 95;
-  p->version = 1;
-  p->length = sizeof(tlv*);
+  paquet* p = creerPaquet(1);
   tlv* t = calloc(1, sizeof(tlv) + 16);
   p->body[0] = t;
   t->type = 4;
@@ -42,10 +33,7 @@ paquet* creerPaquetTlv4(donnee* donnees[], int nbDonnees) {
 }
 
 paquet* creerPaquetTlv5() {
-  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
-  p->magic = 95;
-  p->version = 1;
-  p->length = sizeof(tlv*);
+  paquet* p = creerPaquet(1);
   tlv* t = calloc(1, sizeof(tlv));
   p->body[0] = t;
   t->type = 5;
@@ -53,11 +41,8 @@ paquet* creerPaquetTlv5() {
 }
 
 paquet* creerPaquetTlv6(donnee* donnees[], int nbDonnees) {
-  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
-  p->magic = 95;
-  p->version = 1;
-  p->length = sizeof(tlv*) * nbDonnees;
-  for (int i = 0; i < min(nbDonnees, 5); i++) {
+  paquet* p = creerPaquet(nbDonnees);
+  for (int i = 0; i < nbDonnees; i++) {
     tlv* t = calloc(1, sizeof(tlv));
     p->body[i] = t;
     t->type = 6;
@@ -67,10 +52,7 @@ paquet* creerPaquetTlv6(donnee* donnees[], int nbDonnees) {
 }
 
 paquet* creerPaquetTlv7(uint64_t id) {
-  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
-  p->magic = 95;
-  p->version = 1;
-  p->length = sizeof(tlv*);
+  paquet* p = creerPaquet(1);
   tlv* t = calloc(1, sizeof(tlv));
   p->body[0] = t;
   t->type = 7;
@@ -80,13 +62,18 @@ paquet* creerPaquetTlv7(uint64_t id) {
 }
 
 paquet* creerPaquetTlv8(donnee* d) {
-  paquet* p = calloc(1, sizeof(paquet) + sizeof(tlv*));
-  p->magic = 95;
-  p->version = 1;
-  p->length = sizeof(tlv*);
+  paquet* p = creerPaquet(1);
   tlv* t = calloc(1, sizeof(tlv));
   p->body[0] = t;
   t->type = 8;
   t->data = d;
+  return p;
+}
+
+paquet* creerPaquet(int nbDonnees) {
+  paquet* p = calloc(1, sizeof(paquet) + nbDonnees * sizeof(tlv*));
+  p->magic = 95;
+  p->version = 1;
+  p->length = nbDonnees;
   return p;
 }
