@@ -122,6 +122,7 @@ int main(int argc, char* argv[]) {
   time_t tempsDebut = time(NULL);
   while (1) {
     if (tempsDebut + INTERVAL_20 <= time(NULL)) {
+      printDebug("nbDonnees, nbVoisins : %d, %d\n", nbDonnees, nbVoisins);
       tempsDebut = time(NULL);
       for (int i = 0; i < nbVoisins; i++) {
         voisin* v = voisins[i];
@@ -280,7 +281,7 @@ int main(int argc, char* argv[]) {
           }
           if (t->data->id != id) {
             if (d == NULL) {
-              if (nbDonnees >= DATA_SIZE) continue;
+              if (nbDonnees >= DONNEES_SIZE) continue;
               donnees[nbDonnees++] = t->data;
               printDebug("Ajout d'un nouvelle donnée\n");
               continue;
