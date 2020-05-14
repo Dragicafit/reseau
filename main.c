@@ -25,11 +25,11 @@
 #include "tlv.h"
 
 gboolean debug = FALSE;
-static gboolean ipv6 = TRUE;
+static gboolean ipv4 = FALSE;
 
 static GOptionEntry entries[] = {
     {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "debug", NULL},
-    {"ipv6", '6', 0, G_OPTION_ARG_NONE, &ipv6, "lancer avec ipv6", NULL},
+    {"ipv4", '4', 0, G_OPTION_ARG_NONE, &ipv4, "lancer avec ipv4", NULL},
     {NULL}};
 
 uint64_t id = 0;
@@ -105,8 +105,8 @@ int main(int argc, char* argv[]) {
   memset(&serv, 0, serv_len);
   serv.sin6_family = AF_INET6;
   serv.sin6_port = htons(1212);
-  char ipv4[INET6_ADDRSTRLEN] = "::ffff:";
-  if (inet_pton(AF_INET6, ipv6 ? IPV6_PROF : strcat(ipv4, IPV4_PROF),
+  char ipv4_6[INET6_ADDRSTRLEN] = "::ffff:";
+  if (inet_pton(AF_INET6, ipv4 ? strcat(ipv4_6, IPV4_PROF) : IPV6_PROF,
                 &serv.sin6_addr) < 1)
     handle_error("inet error");
 
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
       envoi = arcParser(p);
       rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                   addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
-      if (rc < 0) handle_error("select error");
+      if (rc < 0) handle_error("sendto error");
       printDebug("Envoi d'un TLV2 a un voisin aléatoire\n");
 
       printPaquet(p);
@@ -237,11 +237,14 @@ int main(int argc, char* argv[]) {
           break;
         case 5:
           p = creerPaquetTlv6(donnees, nbDonnees);
+          printf("nb = %d\n\n", nbDonnees);
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
           printDebug("Envoi d'une liste de tlv 6\n");
+          debug = 1;
           printPaquet(p);
+          debug = 0;
           break;
         case 6:
           for (int j = 0; j < nbDonnees; j++) {
