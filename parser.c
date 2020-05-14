@@ -36,7 +36,7 @@ paquet* parser(uint8_t req[]) {
   body_length = ntohs(*(uint16_t*)&req[2]);
   if (p->magic != 95) return NULL;
   if (p->version != 1) return NULL;
-  if (body_length + 4 > PAQUET_SIZE) return NULL;
+  if (body_length > SIZE_TLV_MAX) return NULL;
 
   tlv* list[NB_TLV_MAX];
   int count = 0;
@@ -150,7 +150,7 @@ uint8_t* arcParser(paquet* p) {
   uint16_t paquet_size = 0;
   uint8_t tlv_body[DATA_SIZE + 26];
 
-  uint8_t tlvList[PAQUET_SIZE - 4];
+  uint8_t tlvList[SIZE_TLV_MAX];
 
   for (int i = 0; i < p->length; i++) {
     int count = 0;
@@ -221,7 +221,7 @@ uint8_t* arcParser(paquet* p) {
       default:
         continue;
     }
-    if (paquet_size + 2 + count + 4 > PAQUET_SIZE) break;
+    if (paquet_size + 2 + count > SIZE_TLV_MAX) break;
     tlvList[paquet_size++] = t->type;
     tlvList[paquet_size++] = count;
     memcpy(&tlvList[paquet_size], tlv_body, count);

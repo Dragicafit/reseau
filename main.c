@@ -40,9 +40,10 @@ static GOptionEntry entries[] = {
      "MESSAGE"},
     {"ip_server", 'i', 0, G_OPTION_ARG_STRING, &ip_server, "modifier le server",
      "IP"},
-    {"port_server", 'S', 0, G_OPTION_ARG_INT, &port_server,
+    {"port_server", 'P', 0, G_OPTION_ARG_INT, &port_server,
      "modifier le port du server", "PORT"},
-    {"port", 'p', 0, G_OPTION_ARG_INT, &port, "modifier le port", "PORT"},
+    {"port", 'p', 0, G_OPTION_ARG_INT, &port, "modifier le port d'écoute",
+     "PORT"},
     {NULL}};
 
 uint64_t id = 0;
@@ -136,7 +137,7 @@ int main(int argc, char* argv[]) {
 
   time_t tempsDebut = time(NULL);
   while (1) {
-    if (tempsDebut + INTERVAL_20 <= time(NULL)) {
+    if (tempsDebut + PARCOURS <= time(NULL)) {
       printDebug("nbDonnees, nbVoisins : %d, %d\n", nbDonnees, nbVoisins);
       tempsDebut = time(NULL);
       for (int i = 0; i < nbVoisins; i++) {
@@ -152,7 +153,7 @@ int main(int argc, char* argv[]) {
 
         if (voisins[i]->permanent) continue;
 
-        if (voisins[i]->last_change + INTERVAL_70 <= time(NULL)) {
+        if (voisins[i]->last_change + TMEOUT <= time(NULL)) {
           free(voisins[i]);
           nbVoisins--;
           voisins[i] = voisins[nbVoisins];
