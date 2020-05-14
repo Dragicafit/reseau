@@ -153,7 +153,6 @@ uint8_t* arcParser(paquet* p) {
   uint8_t tlvList[PAQUET_SIZE - 4];
 
   for (int i = 0; i < p->length; i++) {
-    if (paquet_size + 4 > PAQUET_SIZE) break;
     int count = 0;
     tlv* t = p->body[i];
     if (t == NULL) return NULL;
@@ -222,6 +221,7 @@ uint8_t* arcParser(paquet* p) {
       default:
         continue;
     }
+    if (paquet_size + 2 + count + 4 > PAQUET_SIZE) break;
     tlvList[paquet_size++] = t->type;
     tlvList[paquet_size++] = count;
     memcpy(&tlvList[paquet_size], tlv_body, count);
