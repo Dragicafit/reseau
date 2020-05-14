@@ -26,10 +26,23 @@
 
 gboolean debug = FALSE;
 static gboolean ipv4 = FALSE;
+static gint16 seqno = 0;
+static gchar* message = "";
+static gchar* ip_server = IPV6_PROF;
+static gint16 port_server = PORT_PROF;
+static gint16 port = PORT;
 
 static GOptionEntry entries[] = {
     {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "debug", NULL},
     {"ipv4", '4', 0, G_OPTION_ARG_NONE, &ipv4, "lancer avec ipv4", NULL},
+    {"seqno", 's', 0, G_OPTION_ARG_INT, &seqno, "message avec seqno", "SEQNO"},
+    {"message", 'm', 0, G_OPTION_ARG_STRING, &message, "ajouter un message",
+     "MESSAGE"},
+    {"ip_server", 'i', 0, G_OPTION_ARG_STRING, &ip_server, "modifier le server",
+     "IP"},
+    {"port_server", 'S', 0, G_OPTION_ARG_INT, &port_server,
+     "modifier le port du server", "PORT"},
+    {"port", 'p', 0, G_OPTION_ARG_INT, &port, "modifier le port", "PORT"},
     {NULL}};
 
 uint64_t id = 0;
@@ -68,16 +81,15 @@ int main(int argc, char* argv[]) {
   fclose(f);
 
   printDebug("id : %lu\n", id);
-
-  donnee* d = calloc(1, sizeof(donnee) + 25);
-  d->id = id;
-  memcpy(d->data, "nfghfghjkfghlkfjghlkfhjj", 25);
-  d->length = 25;
-  d->seqno = 0;
-  d->node_hash = nodeHash(d);
-  donnees[0] = d;
-
-  nbDonnees++;
+  if (strcmp(message, "") != 0) {
+    donnee* d = calloc(1, sizeof(donnee) + strlen(message));
+    d->id = id;
+    memcpy(d->data, message, strlen(message));
+    d->length = strlen(message);
+    d->seqno = 0;
+    d->node_hash = nodeHash(d);
+    donnees[nbDonnees++] = d;
+  }
 
   int s, val = 1, rc;
   paquet* p;
@@ -95,29 +107,32 @@ int main(int argc, char* argv[]) {
 
   memset(&addr, 0, addr_len);
   addr.sin6_family = AF_INET6;
-  addr.sin6_port = htons(PORT);
+  addr.sin6_port = htons(port);
 
   if (bind(s, (struct sockaddr*)&addr, addr_len) < 0)
     handle_error("bind s error");
 
-  printDebug("Ouverture du serveur sur le port %d\n", PORT);
+  printDebug("Ouverture sur le port %d\n", port);
 
-  memset(&serv, 0, serv_len);
-  serv.sin6_family = AF_INET6;
-  serv.sin6_port = htons(1212);
-  char ipv4_6[INET6_ADDRSTRLEN] = "::ffff:";
-  if (inet_pton(AF_INET6, ipv4 ? strcat(ipv4_6, IPV4_PROF) : IPV6_PROF,
-                &serv.sin6_addr) < 1)
-    handle_error("inet error");
+  if (strcmp(ip_server, "") != 0) {
+    memset(&serv, 0, serv_len);
+    serv.sin6_family = AF_INET6;
+    serv.sin6_port = htons(port_server);
+    char ipv4_6[INET6_ADDRSTRLEN] = "::ffff:";
+    if (inet_pton(AF_INET6, ipv4 ? strcat(ipv4_6, ip_server) : ip_server,
+                  &serv.sin6_addr) < 1)
+      handle_error("inet error");
 
-  voisins[0] = calloc(1, sizeof(voisin));
-  voisins[0]->permanent = 1;
-  memcpy(&voisins[0]->s.ip, &serv.sin6_addr, sizeof(struct in6_addr));
-  voisins[0]->s.port = serv.sin6_port;
-  voisins[0]->last_change = time(NULL);
-  nbVoisins++;
+    voisins[0] = calloc(1, sizeof(voisin));
+    voisins[0]->permanent = 1;
+    memcpy(&voisins[0]->s.ip, &serv.sin6_addr, sizeof(struct in6_addr));
+    voisins[0]->s.port = serv.sin6_port;
+    voisins[0]->last_change = time(NULL);
+    nbVoisins++;
 
-  printDebug("Ajout du serveur dans la liste des voisins\n");
+    printDebug("Ajout du serveur %s:%i dans la liste des voisins\n", ip_server,
+               port_server);
+  }
 
   time_t tempsDebut = time(NULL);
   while (1) {
