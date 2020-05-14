@@ -25,7 +25,7 @@
 #include "tlv.h"
 
 gboolean debug = FALSE;
-static gboolean ipv6 = FALSE;
+static gboolean ipv6 = TRUE;
 
 static GOptionEntry entries[] = {
     {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "debug", NULL},
