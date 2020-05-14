@@ -247,6 +247,7 @@ int main(int argc, char* argv[]) {
           for (int j = 0; j < nbDonnees; j++) {
             d = donnees[j];
             if (d->id != t->data->id) break;
+            d = NULL;
           }
           if (d != NULL && d->node_hash == t->data->node_hash) continue;
           p = creerPaquetTlv7(t->data->id);
