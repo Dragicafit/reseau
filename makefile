@@ -1,6 +1,6 @@
 CC      := gcc
-CCFLAGS := -Wall -g -std=c11 -m64
-LDFLAGS := -lm -lcrypto
+CCFLAGS := -Wall -g -std=c11 -m64 $(shell pkg-config --cflags glib-2.0)
+LDFLAGS := -lm -lcrypto $(shell pkg-config --libs glib-2.0)
 
 TARGETS:= main
 MAINS  := $(addsuffix .o, $(TARGETS) )

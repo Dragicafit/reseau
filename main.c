@@ -5,6 +5,8 @@
 #endif
 
 #include <arpa/inet.h>
+#include <glib.h>
+#include <glib/gprintf.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,14 +24,32 @@
 #include "parser.h"
 #include "tlv.h"
 
+gboolean debug = FALSE;
+static gboolean ipv6 = FALSE;
+
+static GOptionEntry entries[] = {
+    {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "debug", NULL},
+    {"ipv6", '6', 0, G_OPTION_ARG_NONE, &ipv6, "lancer avec ipv6", NULL},
+    {NULL}};
+
 uint64_t id = 0;
 voisin* voisins[VOISINS_SIZE] = {NULL};
 donnee* donnees[DONNEES_SIZE] = {NULL};
 int nbVoisins = 0;
 int nbDonnees = 0;
 
-int main(int argc, char const* argv[]) {
+int main(int argc, char* argv[]) {
   srand(time(NULL));
+
+  GError* error = NULL;
+  GOptionContext* context;
+  context = g_option_context_new("- test");
+  g_option_context_add_main_entries(context, entries, NULL);
+
+  if (!g_option_context_parse(context, &argc, &argv, &error)) {
+    g_print("option parsing failed: %s\n", error->message);
+    exit(1);
+  }
 
   FILE* f = fopen("id.txt", "r+");
   if (f == NULL) {
@@ -47,7 +67,7 @@ int main(int argc, char const* argv[]) {
   }
   fclose(f);
 
-  printf("id : %lu\n", id);
+  printDebug("id : %lu\n", id);
 
   donnee* d = calloc(1, sizeof(donnee) + 25);
   d->id = id;
@@ -69,11 +89,6 @@ int main(int argc, char const* argv[]) {
   socklen_t serv_len = sizeof(struct sockaddr_in6);
   socklen_t client_len = sizeof(struct sockaddr_in6);
 
-  char ipv6 = 0;
-  if (argc > 1 && strcmp(argv[1], "1") == 0) {
-    ipv6 = 1;
-  }
-
   if ((s = socket(AF_INET6, SOCK_DGRAM, 0)) < 0) handle_error("socket error");
   if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0)
     handle_error("sockop error");
@@ -85,7 +100,7 @@ int main(int argc, char const* argv[]) {
   if (bind(s, (struct sockaddr*)&addr, addr_len) < 0)
     handle_error("bind s error");
 
-  printf("Ouverture du serveur sur le port %d\n", PORT);
+  printDebug("Ouverture du serveur sur le port %d\n", PORT);
 
   memset(&serv, 0, serv_len);
   serv.sin6_family = AF_INET6;
@@ -102,7 +117,7 @@ int main(int argc, char const* argv[]) {
   voisins[0]->last_change = time(NULL);
   nbVoisins++;
 
-  printf("Ajout du serveur dans la liste des voisins\n");
+  printDebug("Ajout du serveur dans la liste des voisins\n");
 
   time_t tempsDebut = time(NULL);
   while (1) {
@@ -115,7 +130,7 @@ int main(int argc, char const* argv[]) {
         rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                     addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
         if (rc < 0) handle_error("select error");
-        printf("Envoi d'un TLV4 a un voisin\n");
+        printDebug("Envoi d'un TLV4 a un voisin\n");
 
         printPaquet(p);
 
@@ -137,7 +152,7 @@ int main(int argc, char const* argv[]) {
       rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                   addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
       if (rc < 0) handle_error("select error");
-      printf("Envoi d'un TLV2 a un voisin aléatoire\n");
+      printDebug("Envoi d'un TLV2 a un voisin aléatoire\n");
 
       printPaquet(p);
     }
@@ -155,11 +170,11 @@ int main(int argc, char const* argv[]) {
                   &client_len);
     if (rc < 0) handle_error("recvf error");
 
-    printf("Réception d'un paquet\n");
+    printDebug("Réception d'un paquet\n");
 
     char ip[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, &client.sin6_addr, ip, INET6_ADDRSTRLEN);
-    printf("ip : \t\t\t%s:%hu\n", ip, ntohs(client.sin6_port));
+    printDebug("ip : \t\t\t%s:%hu\n", ip, ntohs(client.sin6_port));
 
     p = parser(req);
     if (p == NULL) continue;
@@ -171,7 +186,7 @@ int main(int argc, char const* argv[]) {
         break;
       }
     }
-    printf("Vérification de la présence\n");
+    printDebug("Vérification de la présence\n");
 
     if (present == -1) {
       if (nbVoisins >= MAX_VOISINS) continue;
@@ -182,12 +197,12 @@ int main(int argc, char const* argv[]) {
              sizeof(struct in6_addr));
       voisins[present]->s.port = client.sin6_port;
       nbVoisins++;
-      printf("Voisin ajouté\n");
+      printDebug("Voisin ajouté\n");
     }
     voisins[present]->last_change = time(NULL);
 
     for (int i = 0; i < p->length / sizeof(tlv*); i++) {
-      printf("Gestion du tlv n°%d\n", i);
+      printDebug("Gestion du tlv n°%d\n", i);
       tlv* t = p->body[i];
       paquet* p;
       voisin* v;
@@ -200,7 +215,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          printf("Envoi d'un tlv 3\n");
+          printDebug("Envoi d'un tlv 3\n");
           printPaquet(p);
           break;
         case 3:
@@ -208,7 +223,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  addrToSockaddr(&t->address), sizeof(struct sockaddr_in6));
-          printf("Envoi d'un tlv 4\n");
+          printDebug("Envoi d'un tlv 4\n");
           printPaquet(p);
           break;
         case 4:
@@ -217,7 +232,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          printf("Envoi d'un tlv 5\n");
+          printDebug("Envoi d'un tlv 5\n");
           printPaquet(p);
           break;
         case 5:
@@ -225,7 +240,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          printf("Envoi d'une liste de tlv 6\n");
+          printDebug("Envoi d'une liste de tlv 6\n");
           printPaquet(p);
           break;
         case 6:
@@ -238,7 +253,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          printf("Envoi d'un tlv 7\n");
+          printDebug("Envoi d'un tlv 7\n");
           printPaquet(p);
           break;
         case 7:
@@ -251,7 +266,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          printf("Envoi d'un tlv 8\n");
+          printDebug("Envoi d'un tlv 8\n");
           printPaquet(p);
           break;
         case 8:
@@ -264,7 +279,7 @@ int main(int argc, char const* argv[]) {
             if (d == NULL) {
               if (nbDonnees >= DATA_SIZE) continue;
               donnees[nbDonnees++] = t->data;
-              printf("Ajout d'un nouvelle donnée\n");
+              printDebug("Ajout d'un nouvelle donnée\n");
               continue;
             }
           }
@@ -274,7 +289,7 @@ int main(int argc, char const* argv[]) {
           if (t->data->id == id) {
             if (less_or_equals(d->seqno, t->data->seqno)) {
               d->seqno = sum(t->data->seqno, 1);
-              printf("Changement du seqno\n");
+              printDebug("Changement du seqno\n");
             }
             continue;
           }
@@ -282,14 +297,14 @@ int main(int argc, char const* argv[]) {
           if (!less_or_equals(t->data->seqno, d->seqno)) {
             free(d);
             donnees[position] = t->data;
-            printf("Modification d'une donnée\n");
+            printDebug("Modification d'une donnée\n");
           }
           break;
         case 9:
-          printf("Warning : %s", t->data->data);
+          printDebug("Warning : %s", t->data->data);
           break;
         default:
-          printf("Type inconu\n");
+          printDebug("Type inconu\n");
           continue;
       }
     }

@@ -1,6 +1,8 @@
 #ifndef CONSTANTES
 #define CONSTANTES
 
+#include <glib.h>
+
 #define handle_error(msg) \
   do {                    \
     perror(msg);          \
@@ -28,11 +30,13 @@
 #define VOISINS_SIZE 100
 #define DONNEES_SIZE 1000
 #define MAX_VOISINS 15
-#define INTERVAL_20 20
+#define INTERVAL_20 2
 #define INTERVAL_70 70
 #define MAX_SEND_TLV2 5
 #define IPV6_PROF "2001:660:3301:9200::51c2:1b9b"
 #define IPV4_PROF "81.194.27.155"
 #define IPV4_TEST "54.38.185.173"
+
+extern gboolean debug;
 
 #endif
