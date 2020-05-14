@@ -36,9 +36,10 @@ void tri(donnee* donnees[], int posDonnee[], int first, int last) {
     j = last;
 
     while (i < j) {
-      while (donnees[posDonnee[i]] <= donnees[posDonnee[pivot]] && i < last)
+      while (donnees[posDonnee[i]]->id <= donnees[posDonnee[pivot]]->id &&
+             i < last)
         i++;
-      while (donnees[posDonnee[j]] > donnees[posDonnee[pivot]]) j--;
+      while (donnees[posDonnee[j]]->id > donnees[posDonnee[pivot]]->id) j--;
       if (i < j) {
         temp = posDonnee[i];
         posDonnee[i] = posDonnee[j];
