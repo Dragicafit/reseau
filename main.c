@@ -47,8 +47,6 @@ int main(int argc, char const* argv[]) {
   }
   fclose(f);
 
-  write(0, "\n", 1);
-
   printf("id : %lu\n", id);
 
   donnee* d = calloc(1, sizeof(donnee) + 25);
@@ -72,7 +70,7 @@ int main(int argc, char const* argv[]) {
   socklen_t client_len = sizeof(struct sockaddr_in6);
 
   char ipv6 = 0;
-  if (argc > 1 && argv[1][0] == '1') {
+  if (argc > 1 && strcmp(argv[1], "1") == 0) {
     ipv6 = 1;
   }
 
@@ -87,7 +85,7 @@ int main(int argc, char const* argv[]) {
   if (bind(s, (struct sockaddr*)&addr, addr_len) < 0)
     handle_error("bind s error");
 
-  write(0, "Ouverture du serveur sur le port 3001\n", 38);
+  printf("Ouverture du serveur sur le port %d\n", PORT);
 
   memset(&serv, 0, serv_len);
   serv.sin6_family = AF_INET6;
@@ -104,7 +102,7 @@ int main(int argc, char const* argv[]) {
   voisins[0]->last_change = time(NULL);
   nbVoisins++;
 
-  write(0, "Ajout du serveur dans la liste des voisins\n", 43);
+  printf("Ajout du serveur dans la liste des voisins\n");
 
   time_t tempsDebut = time(NULL);
   while (1) {
@@ -117,7 +115,7 @@ int main(int argc, char const* argv[]) {
         rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                     addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
         if (rc < 0) handle_error("select error");
-        write(0, "Envoi d'un TLV4 a un voisin\n", 28);
+        printf("Envoi d'un TLV4 a un voisin\n");
 
         printPaquet(p);
 
@@ -139,7 +137,7 @@ int main(int argc, char const* argv[]) {
       rc = sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                   addrToSockaddr(&v->s), sizeof(struct sockaddr_in6));
       if (rc < 0) handle_error("select error");
-      write(0, "Envoi d'un TLV2 a un voisin aléatoire\n", 39);
+      printf("Envoi d'un TLV2 a un voisin aléatoire\n");
 
       printPaquet(p);
     }
@@ -157,7 +155,7 @@ int main(int argc, char const* argv[]) {
                   &client_len);
     if (rc < 0) handle_error("recvf error");
 
-    write(0, "Réception d'un paquet\n", 23);
+    printf("Réception d'un paquet\n");
 
     char ip[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, &client.sin6_addr, ip, INET6_ADDRSTRLEN);
@@ -202,7 +200,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          write(0, "Envoi d'un tlv 3\n", 17);
+          printf("Envoi d'un tlv 3\n");
           printPaquet(p);
           break;
         case 3:
@@ -210,7 +208,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  addrToSockaddr(&t->address), sizeof(struct sockaddr_in6));
-          write(0, "Envoi d'un tlv 4\n", 17);
+          printf("Envoi d'un tlv 4\n");
           printPaquet(p);
           break;
         case 4:
@@ -219,7 +217,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          write(0, "Envoi d'un tlv 5\n", 17);
+          printf("Envoi d'un tlv 5\n");
           printPaquet(p);
           break;
         case 5:
@@ -227,7 +225,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          write(0, "Envoi d'une liste de tlv 6\n", 27);
+          printf("Envoi d'une liste de tlv 6\n");
           printPaquet(p);
           break;
         case 6:
@@ -240,7 +238,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          write(0, "Envoi d'un tlv 7\n", 17);
+          printf("Envoi d'un tlv 7\n");
           printPaquet(p);
           break;
         case 7:
@@ -253,7 +251,7 @@ int main(int argc, char const* argv[]) {
           envoi = arcParser(p);
           sendto(s, envoi, ntohs(*(uint16_t*)&envoi[2]) + 4, 0,
                  (struct sockaddr*)&client, client_len);
-          write(0, "Envoi d'un tlv 8\n", 17);
+          printf("Envoi d'un tlv 8\n");
           printPaquet(p);
           break;
         case 8:
@@ -266,7 +264,7 @@ int main(int argc, char const* argv[]) {
             if (d == NULL) {
               if (nbDonnees >= DATA_SIZE) continue;
               donnees[nbDonnees++] = t->data;
-              write(0, "Ajout d'un nouvelle donnée\n", 28);
+              printf("Ajout d'un nouvelle donnée\n");
               continue;
             }
           }
@@ -276,7 +274,7 @@ int main(int argc, char const* argv[]) {
           if (t->data->id == id) {
             if (less_or_equals(d->seqno, t->data->seqno)) {
               d->seqno = sum(t->data->seqno, 1);
-              write(0, "Changement du seqno\n", 20);
+              printf("Changement du seqno\n");
             }
             continue;
           }
@@ -284,14 +282,14 @@ int main(int argc, char const* argv[]) {
           if (!less_or_equals(t->data->seqno, d->seqno)) {
             free(d);
             donnees[position] = t->data;
-            write(0, "Modification d'une donnée\n", 27);
+            printf("Modification d'une donnée\n");
           }
           break;
         case 9:
           printf("Warning : %s", t->data->data);
           break;
         default:
-          write(0, "Type inconu\n", 12);
+          printf("Type inconu\n");
           continue;
       }
     }
