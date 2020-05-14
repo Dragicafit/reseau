@@ -15,7 +15,7 @@ __uint128_t nodeHash(donnee* donnee) {
 
   char concDonnee[sizeof(uint64_t) + sizeof(uint16_t) + DATA_SIZE] = {0};
   *(uint64_t*)concDonnee = htobe64(donnee->id);
-  *(uint16_t*)&concDonnee[8] = donnee->seqno;
+  *(uint16_t*)&concDonnee[8] = htons(donnee->seqno);
   memcpy(&concDonnee[10], donnee->data, donnee->length);
 
   SHA256((uint8_t*)concDonnee,
