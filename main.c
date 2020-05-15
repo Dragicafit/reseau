@@ -26,11 +26,11 @@
 
 gboolean debug = FALSE;
 static gboolean ipv4 = FALSE;
-static gint16 seqno = 0;
+static guint16 seqno = 0;
 static gchar* message = "";
 static gchar* ip_server = IPV6_PROF;
-static gint16 port_server = PORT_PROF;
-static gint16 port = PORT;
+static guint16 port_server = PORT_PROF;
+static guint16 port = PORT;
 
 static GOptionEntry entries[] = {
     {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "debug", NULL},
@@ -131,8 +131,8 @@ int main(int argc, char* argv[]) {
     voisins[0]->last_change = time(NULL);
     nbVoisins++;
 
-    printDebug("Ajout du serveur %s:%i dans la liste des voisins\n", ip_server,
-               port_server);
+    printDebug("Ajout du serveur [%s]:%hu dans la liste des voisins\n",
+               ip_server, port_server);
   }
 
   time_t tempsDebut = time(NULL);

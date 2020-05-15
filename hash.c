@@ -56,11 +56,13 @@ void tri(donnee* donnees[], int posDonnee[], int first, int last) {
 }
 
 __uint128_t networkHash(donnee* donnees[], int nbDonnees) {
+  __uint128_t h;
+  uint8_t buff[32];
+
   int* posDonnee = calloc(nbDonnees, sizeof(int));
   for (int i = 0; i < nbDonnees; i++) posDonnee[i] = i;
   tri(donnees, posDonnee, 0, nbDonnees - 1);
 
-  __uint128_t h;
   __uint128_t concDonnee[sizeof(__uint128_t) * DONNEES_SIZE] = {0};
   int count = 0;
   for (int i = 0; i < nbDonnees; i++) {
@@ -69,6 +71,10 @@ __uint128_t networkHash(donnee* donnees[], int nbDonnees) {
     __uint128_t h1 = d->node_hash;
     concDonnee[count++] = h1;
   }
-  SHA256((uint8_t*)concDonnee, count, (uint8_t*)&h);
+  SHA256((uint8_t*)concDonnee, count, buff);
+
+  ((uint64_t*)&h)[0] = be64toh(*(uint64_t*)buff);
+  ((uint64_t*)&h)[1] = be64toh(*(uint64_t*)&buff[8]);
+
   return h;
 }
