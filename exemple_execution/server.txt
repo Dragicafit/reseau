@@ -1,14 +1,14 @@
-make && ./main -d -i "" -p 1212 -m "je suis le server"
-make: Nothing to be done for 'all'.
+./main -d -i "" -p 1212 -m "je suis le server"
 id : 6782589553406975549
 Ouverture sur le port 1212
+nbDonnees, nbVoisins : 1, 0
 Réception d'un paquet
-ip :                    ::ffff:89.92.119.40:3001
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
 nb tlv :                1
 type :                  4
-network hash :          5367350b22de8094c134a9d606190f3a
+network hash :          88aa3e3b1f22c616b1817981215e7d1e
 
 Vérification de la présence
 Voisin ajouté
@@ -20,7 +20,7 @@ nb tlv :                1
 type :                  5
 
 Réception d'un paquet
-ip :                    ::ffff:89.92.119.40:3001
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
 nb tlv :                1
@@ -36,19 +36,14 @@ type :                  3
 ip :                    ::ffff:89.92.119.40:3001
 
 Réception d'un paquet
-ip :                    ::ffff:89.92.119.40:3001
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
-nb tlv :                2
+nb tlv :                1
 type :                  6
 id :                    1394416251390898634
 seqno :                 0
 node hash :             d4e49119e724cea47dd043f2196211a7
-
-type :                  6
-id :                    6782589553406975549
-seqno :                 0
-node hash :             b5cef2594a394f88bacbc15e741caa64
 
 Vérification de la présence
 Gestion du tlv n°0
@@ -59,9 +54,8 @@ nb tlv :                1
 type :                  7
 id :                    1394416251390898634
 
-Gestion du tlv n°1
 Réception d'un paquet
-ip :                    ::ffff:89.92.119.40:3001
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
 nb tlv :                1
@@ -81,7 +75,7 @@ magic :                 95
 version :               1
 nb tlv :                1
 type :                  4
-network hash :          5367350b22de8094c134a9d606190f3a
+network hash :          9480de220b3567533a0f1906d6a934c1
 
 Envoi d'un TLV2 a un voisin aléatoire
 magic :                 95
@@ -90,7 +84,39 @@ nb tlv :                1
 type :                  2
 
 Réception d'un paquet
+expéditeur :            [::ffff:89.92.119.40]:3001
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  4
+network hash :          88aa3e3b1f22c616b1817981215e7d1e
+
+Vérification de la présence
+Gestion du tlv n°0
+Envoi d'un tlv 5
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  5
+
+Réception d'un paquet
+expéditeur :            [::ffff:89.92.119.40]:3001
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  2
+
+Vérification de la présence
+Gestion du tlv n°0
+Envoi d'un tlv 3
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  3
 ip :                    ::ffff:89.92.119.40:3001
+
+Réception d'un paquet
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
 nb tlv :                1
@@ -113,7 +139,7 @@ seqno :                 0
 node hash :             d4e49119e724cea47dd043f2196211a7
 
 Réception d'un paquet
-ip :                    ::ffff:89.92.119.40:3001
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
 nb tlv :                1
@@ -127,21 +153,33 @@ magic :                 95
 version :               1
 nb tlv :                1
 type :                  4
-network hash :          5367350b22de8094c134a9d606190f3a
+network hash :          9480de220b3567533a0f1906d6a934c1
 
 Réception d'un paquet
-ip :                    ::ffff:54.38.185.173:1212
+expéditeur :            [::ffff:89.92.119.40]:3001
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  6
+id :                    1394416251390898634
+seqno :                 0
+node hash :             d4e49119e724cea47dd043f2196211a7
+
+Vérification de la présence
+Gestion du tlv n°0
+Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
 magic :                 95
 version :               1
 nb tlv :                1
 type :                  4
-network hash :          5367350b22de8094c134a9d606190f3a
+network hash :          9480de220b3567533a0f1906d6a934c1
 
 Vérification de la présence
 Voisin ajouté
 Gestion du tlv n°0
 Réception d'un paquet
-ip :                    ::ffff:89.92.119.40:3001
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
 nb tlv :                1
@@ -161,18 +199,82 @@ seqno :                 0
 node hash :             b5cef2594a394f88bacbc15e741caa64
 data :                  je suis le server
 
-Réception d'un paquet
-ip :                    ::ffff:89.92.119.40:3001
+nbDonnees, nbVoisins : 2, 2
+Envoi d'un TLV4 a un voisin
 magic :                 95
 version :               1
 nb tlv :                1
 type :                  4
-network hash :          5367350b22de8094c134a9d606190f3a
+network hash :          9480de220b3567533a0f1906d6a934c1
+
+Envoi d'un TLV4 a un voisin
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  4
+network hash :          9480de220b3567533a0f1906d6a934c1
+
+Envoi d'un TLV2 a un voisin aléatoire
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  2
+
+Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  4
+network hash :          9480de220b3567533a0f1906d6a934c1
 
 Vérification de la présence
 Gestion du tlv n°0
 Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  2
+
+Vérification de la présence
+Gestion du tlv n°0
+Envoi d'un tlv 3
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  3
 ip :                    ::ffff:89.92.119.40:3001
+
+Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  3
+ip :                    ::ffff:89.92.119.40:3001
+
+Vérification de la présence
+Gestion du tlv n°0
+Envoi d'un tlv 4
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  4
+network hash :          9480de220b3567533a0f1906d6a934c1
+
+Réception d'un paquet
+expéditeur :            [::ffff:89.92.119.40]:3001
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  4
+network hash :          9480de220b3567533a0f1906d6a934c1
+
+Vérification de la présence
+Gestion du tlv n°0
+Réception d'un paquet
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
 nb tlv :                1
@@ -188,9 +290,12 @@ type :                  3
 ip :                    ::ffff:54.38.185.173:1212
 
 Réception d'un paquet
-ip :                    ::ffff:89.92.119.40:3001
+expéditeur :            [::ffff:89.92.119.40]:3001
 magic :                 95
 version :               1
 nb tlv :                1
 type :                  4
-network hash :          5367350b22de8094c134a9d606190f3a
+network hash :          9480de220b3567533a0f1906d6a934c1
+
+Vérification de la présence
+Gestion du tlv n°0
