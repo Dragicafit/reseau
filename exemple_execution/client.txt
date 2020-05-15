@@ -1,0 +1,107 @@
+make && ./main -d -i 54.38.185.173 -4 -m "je suis le client"
+make: rien à faire pour « all ».
+id : 1394416251390898634
+Ouverture sur le port 3001
+Ajout du serveur 54.38.185.173:1212 dans la liste des voisins
+Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  4
+network hash :          5367350b22de8094c134a9d606190f3a
+
+Vérification de la présence
+Gestion du tlv n°0
+Envoi d'un tlv 5
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  5
+
+Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  2
+
+Vérification de la présence
+Gestion du tlv n°0
+Envoi d'un tlv 3
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  3
+ip :                    ::ffff:54.38.185.173:1212
+
+Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
+magic :                 95
+version :               1
+nb tlv :                2
+type :                  6
+id :                    6782589553406975549
+seqno :                 0
+node hash :             b5cef2594a394f88bacbc15e741caa64
+
+type :                  6
+id :                    1394416251390898634
+seqno :                 0
+node hash :             d4e49119e724cea47dd043f2196211a7
+
+Vérification de la présence
+Gestion du tlv n°0
+Envoi d'un tlv 7
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  7
+id :                    6782589553406975549
+
+Gestion du tlv n°1
+Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  8
+length :                17
+id :                    6782589553406975549
+seqno :                 0
+node hash :             b5cef2594a394f88bacbc15e741caa64
+data :                  je suis le server
+
+Vérification de la présence
+Gestion du tlv n°0
+Ajout d'un nouvelle donnée
+nbDonnees, nbVoisins : 2, 1
+Envoi d'un TLV4 a un voisin
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  4
+network hash :          5367350b22de8094c134a9d606190f3a
+
+Envoi d'un TLV2 a un voisin aléatoire
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  2
+
+Réception d'un paquet
+expéditeur :            [::ffff:54.38.185.173]:1212
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  3
+ip :                    ::ffff:54.38.185.173:1212
+
+Vérification de la présence
+Gestion du tlv n°0
+Envoi d'un tlv 4
+magic :                 95
+version :               1
+nb tlv :                1
+type :                  4
+network hash :          5367350b22de8094c134a9d606190f3a
