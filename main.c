@@ -191,7 +191,7 @@ int main(int argc, char* argv[]) {
 
     char ip[INET6_ADDRSTRLEN];
     inet_ntop(AF_INET6, &client.sin6_addr, ip, INET6_ADDRSTRLEN);
-    printDebug("ip : \t\t\t%s:%hu\n", ip, ntohs(client.sin6_port));
+    printDebug("expéditeur : \t\t[%s]:%hu\n", ip, ntohs(client.sin6_port));
 
     p = parser(req);
     if (p == NULL) continue;
