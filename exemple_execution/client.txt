@@ -192,7 +192,7 @@ data :                  je suis le server
 
 Vérification de la présence
 Gestion du tlv n°0
-Ajout d'un nouvelle donnée
+ajout d'une nouvelle donnée
 Réception d'un paquet
 expéditeur :            [::ffff:54.38.185.173]:1212
 magic :                 95

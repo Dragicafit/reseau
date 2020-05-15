@@ -68,7 +68,7 @@ data :                  je suis le client
 
 Vérification de la présence
 Gestion du tlv n°0
-Ajout d'un nouvelle donnée
+ajout d'une nouvelle donnée
 nbDonnees, nbVoisins : 2, 1
 Envoi d'un TLV4 a un voisin
 magic :                 95

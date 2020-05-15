@@ -299,7 +299,7 @@ int main(int argc, char* argv[]) {
             if (d == NULL) {
               if (nbDonnees >= DONNEES_SIZE) continue;
               donnees[nbDonnees++] = t->data;
-              printDebug("Ajout d'un nouvelle donnée\n");
+              printDebug("ajout d'une nouvelle donnée\n");
               continue;
             }
           }
