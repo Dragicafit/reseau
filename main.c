@@ -303,7 +303,7 @@ int main(int argc, char* argv[]) {
               continue;
             }
           }
-
+          if (t->data->id == id && d == NULL) continue;
           if (d->node_hash == t->data->node_hash) continue;
 
           if (t->data->id == id) {
