@@ -56,9 +56,9 @@ $ ./main -p 8000
 
 `DATA_SIZE` : taille maximale du body d'un tlv
 
-`VOISINS_SIZE` : taille du tableau de voisins
+`VOISINS_SIZE` : taille de la table des voisins
 
-`DONNEES_SIZE` : taille du tableau de données
+`DONNEES_SIZE` : taille de la table des données
 
 `MAX_VOISINS` : une fois cette valeur dépasée, les voisins ne sont plus ajoutés 
 
@@ -66,4 +66,4 @@ $ ./main -p 8000
 
 `TMEOUT` : élimination d'un voisin
 
-`MAX_SEND_TLV2` : envoie des TLV2 tat que cette valeur n'est pas atteinte
+`MAX_SEND_TLV2` : envoie des TLV2 tant que cette valeur n'est pas atteinte
